@@ -1,204 +1,262 @@
-# projects
+# GYTL-Tools
 
-这是一个基于 [Next.js 16](https://nextjs.org) + [shadcn/ui](https://ui.shadcn.com) 的全栈应用项目，由扣子编程 CLI 创建。
+<div align="center">
 
-## 快速开始
+**基于杨永兴隔夜套利法的智能选股工具**
 
-### 启动开发服务器
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
+[![shadcn/ui](https://img.shields.io/badge/shadcn/ui-1.0.0-black?style=flat-square)](https://ui.shadcn.com)
+
+[在线演示](#) · [快速开始](#快速开始) · [部署文档](#部署) · [功能特性](#功能特性)
+
+</div>
+
+## 📖 简介
+
+GYTL-Tools 是一个专业的股票选股工具，基于杨永兴隔夜套利法，支持实时行情数据接入和全A股筛选。
+
+### ✨ 核心特性
+
+- 🚀 **实时行情**：接入东方财富API，支持5000+只A股实时数据
+- 📊 **智能筛选**：基于涨幅、量比、换手率等多维度指标筛选
+- 💰 **资金管理**：完善的资金流水和交易记录管理
+- 📈 **数据可视化**：直观的图表和数据展示
+- 🔍 **股票搜索**：支持股票代码和名称快速搜索
+- 🎯 **全A股筛选**：一键筛选全A股符合条件股票
+- 📱 **响应式设计**：完美适配桌面和移动设备
+
+## 🎯 功能特性
+
+### 1. 选股功能
+- ✅ 实时获取A股市场数据
+- ✅ 多维度筛选条件（涨幅、量比、换手率、市值等）
+- ✅ 自动评分和排序
+- ✅ 筛选结果历史记录
+
+### 2. 资金管理
+- ✅ 资金流水记录
+- ✅ 交易记录管理
+- ✅ 自动计算盈亏和收益率
+- ✅ 数据看板展示
+
+### 3. 股票搜索
+- ✅ 支持代码搜索
+- ✅ 支持名称搜索
+- ✅ 实时搜索结果
+- ✅ 快速查看详情
+
+### 4. 数据源
+- ✅ 东方财富API（主要）
+- ✅ 支持5000+只A股
+- ✅ 实时行情数据
+- ✅ 自动缓存优化
+
+## 🚀 快速开始
+
+### 前置要求
+
+- Node.js 24.x
+- pnpm 9.x
+
+### 安装
 
 ```bash
+# 克隆项目
+git clone <repository-url>
+cd gytl-tools
+
+# 安装依赖
+pnpm install
+
+# 启动开发服务器
 coze dev
 ```
 
 启动后，在浏览器中打开 [http://localhost:5000](http://localhost:5000) 查看应用。
 
-开发服务器支持热更新，修改代码后页面会自动刷新。
-
 ### 构建生产版本
 
 ```bash
+# 构建
 coze build
-```
 
-### 启动生产服务器
-
-```bash
+# 启动生产服务器
 coze start
 ```
 
-## 项目结构
+## 📦 部署
+
+本项目支持多种部署方式：
+
+### Docker 部署（推荐）
+
+```bash
+# 构建镜像
+docker build -t gytl-tools:latest .
+
+# 运行容器
+docker run -d -p 3000:3000 --name gytl-tools gytl-tools:latest
+
+# 或使用 Docker Compose
+docker-compose up -d
+```
+
+### 云服务器部署
+
+详细部署文档请查看 [DEPLOY.md](./DEPLOY.md)
+
+### Vercel 部署
+
+```bash
+# 推送到GitHub
+git push
+
+# 在Vercel中导入项目即可
+```
+
+## 📁 项目结构
 
 ```
 src/
-├── app/                      # Next.js App Router 目录
-│   ├── layout.tsx           # 根布局组件
-│   ├── page.tsx             # 首页
-│   ├── globals.css          # 全局样式（包含 shadcn 主题变量）
-│   └── [route]/             # 其他路由页面
-├── components/              # React 组件目录
-│   └── ui/                  # shadcn/ui 基础组件（优先使用）
-│       ├── button.tsx
-│       ├── card.tsx
-│       └── ...
-├── lib/                     # 工具函数库
-│   └── utils.ts            # cn() 等工具函数
-└── hooks/                   # 自定义 React Hooks（可选）
+├── app/                      # Next.js App Router
+│   ├── api/                 # API Routes
+│   │   ├── stocks/         # 股票相关API
+│   │   │   ├── list/       # 股票列表
+│   │   │   └── quote/      # 实时行情
+│   │   └── quote/          # 新浪行情API（已废弃）
+│   ├── layout.tsx          # 根布局
+│   └── page.tsx            # 首页
+├── components/             # React组件
+│   └── ui/                 # shadcn/ui组件
+├── lib/                    # 工具函数
+│   ├── eastmoneyService.ts # 东方财富API服务
+│   ├── fundCalculator.ts   # 资金计算
+│   ├── stockQuote.ts       # 股票行情
+│   └── stockSelector.ts    # 选股逻辑
+└── types/                  # TypeScript类型
+    ├── eastmoney.ts        # 东方财富类型
+    ├── fund.ts            # 资金类型
+    ├── quote.ts           # 行情类型
+    └── stock.ts           # 股票类型
 ```
 
-## 核心开发规范
+## 🔧 配置说明
 
-### 1. 组件开发
+### 环境变量
 
-**优先使用 shadcn/ui 基础组件**
+复制 `.env.example` 到 `.env` 并配置：
 
-本项目已预装完整的 shadcn/ui 组件库，位于 `src/components/ui/` 目录。开发时应优先使用这些组件作为基础：
+```bash
+cp .env.example .env
+```
+
+主要配置项：
+
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `NEXT_PUBLIC_APP_NAME` | 应用名称 | GYTL-Tools |
+| `NEXT_PUBLIC_DEFAULT_MIN_CHANGE` | 最小涨幅 | 3 |
+| `NEXT_PUBLIC_DEFAULT_MAX_CHANGE` | 最大涨幅 | 8 |
+| `NEXT_PUBLIC_STOCK_LIST_CACHE_TIME` | 股票列表缓存时间（秒） | 60 |
+
+详细配置说明请查看 [DEPLOY.md](./DEPLOY.md)
+
+## 📊 数据源说明
+
+### 东方财富API
+
+本项目使用东方财富免费API：
+
+- **股票列表**：http://82.push2.eastmoney.com/api/qt/clist/get
+- **实时行情**：http://push2.eastmoney.com/api/qt/ulist.np/get
+
+**优势**：
+- ✅ 数据完整（5000+只A股）
+- ✅ 稳定性好
+- ✅ 更新及时
+- ✅ 免费使用
+
+**注意事项**：
+- 股票列表接口有缓存（默认60秒）
+- 实时行情接口无缓存，数据实时更新
+- 建议合理控制请求频率
+
+## 🛠️ 开发指南
+
+### 使用 shadcn/ui 组件
 
 ```tsx
-// ✅ 推荐：使用 shadcn 基础组件
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function MyComponent() {
   return (
     <Card>
-      <CardHeader>标题</CardHeader>
       <CardContent>
-        <Input placeholder="输入内容" />
-        <Button>提交</Button>
+        <Button>点击</Button>
       </CardContent>
     </Card>
   );
 }
 ```
 
-**可用的 shadcn 组件清单**
+### 添加新功能
 
-- 表单：`button`, `input`, `textarea`, `select`, `checkbox`, `radio-group`, `switch`, `slider`
-- 布局：`card`, `separator`, `tabs`, `accordion`, `collapsible`, `scroll-area`
-- 反馈：`alert`, `alert-dialog`, `dialog`, `toast`, `sonner`, `progress`
-- 导航：`dropdown-menu`, `menubar`, `navigation-menu`, `context-menu`
-- 数据展示：`table`, `avatar`, `badge`, `hover-card`, `tooltip`, `popover`
-- 其他：`calendar`, `command`, `carousel`, `resizable`, `sidebar`
+1. 在 `src/app/api/` 添加API路由
+2. 在 `src/lib/` 添加业务逻辑
+3. 在 `src/types/` 添加类型定义
+4. 在 `src/components/` 添加UI组件
 
-详见 `src/components/ui/` 目录下的具体组件实现。
+### 样式开发
 
-### 2. 路由开发
-
-Next.js 使用文件系统路由，在 `src/app/` 目录下创建文件夹即可添加路由：
-
-```bash
-# 创建新路由 /about
-src/app/about/page.tsx
-
-# 创建动态路由 /posts/[id]
-src/app/posts/[id]/page.tsx
-
-# 创建路由组（不影响 URL）
-src/app/(marketing)/about/page.tsx
-
-# 创建 API 路由
-src/app/api/users/route.ts
-```
-
-**页面组件示例**
+使用 Tailwind CSS v4：
 
 ```tsx
-// src/app/about/page.tsx
-import { Button } from '@/components/ui/button';
-
-export const metadata = {
-  title: '关于我们',
-  description: '关于页面描述',
-};
-
-export default function AboutPage() {
-  return (
-    <div>
-      <h1>关于我们</h1>
-      <Button>了解更多</Button>
-    </div>
-  );
-}
-```
-
-**动态路由示例**
-
-```tsx
-// src/app/posts/[id]/page.tsx
-export default async function PostPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-
-  return <div>文章 ID: {id}</div>;
-}
-```
-
-**API 路由示例**
-
-```tsx
-// src/app/api/users/route.ts
-import { NextResponse } from 'next/server';
-
-export async function GET() {
-  return NextResponse.json({ users: [] });
-}
-
-export async function POST(request: Request) {
-  const body = await request.json();
-  return NextResponse.json({ success: true });
-}
-```
-
-### 3. 依赖管理
-
-**必须使用 pnpm 管理依赖**
-
-```bash
-# ✅ 安装依赖
-pnpm install
-
-# ✅ 添加新依赖
-pnpm add package-name
-
-# ✅ 添加开发依赖
-pnpm add -D package-name
-
-# ❌ 禁止使用 npm 或 yarn
-# npm install  # 错误！
-# yarn add     # 错误！
-```
-
-项目已配置 `preinstall` 脚本，使用其他包管理器会报错。
-
-### 4. 样式开发
-
-**使用 Tailwind CSS v4**
-
-本项目使用 Tailwind CSS v4 进行样式开发，并已配置 shadcn 主题变量。
-
-```tsx
-// 使用 Tailwind 类名
-<div className="flex items-center gap-4 p-4 rounded-lg bg-background">
-  <Button className="bg-primary text-primary-foreground">
-    主要按钮
-  </Button>
-</div>
-
-// 使用 cn() 工具函数合并类名
-import { cn } from '@/lib/utils';
-
-<div className={cn(
-  "base-class",
-  condition && "conditional-class",
-  className
-)}>
-  内容
+<div className="flex items-center gap-4 p-4 bg-background">
+  <Button className="bg-primary">按钮</Button>
 </div>
 ```
+
+## 📝 更新日志
+
+### v1.1.0 (2024-02-28)
+- ✅ 接入东方财富API
+- ✅ 支持全A股筛选
+- ✅ 添加股票搜索功能
+- ✅ 添加Docker部署支持
+- ✅ 优化资金管理功能
+
+### v1.0.0 (2024-02-28)
+- 🎉 初始版本发布
+- ✅ 基础选股功能
+- ✅ 资金管理功能
+- ✅ shadcn/ui集成
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 📄 许可证
+
+MIT License
+
+## 📮 联系方式
+
+- GitHub Issues
+- Email: support@example.com
+
+---
+
+<div align="center">
+
+**⭐ 如果这个项目对您有帮助，请给一个星标！**
+
+Made with ❤️ by [Your Name]
+
+</div>
 
 **主题变量**
 

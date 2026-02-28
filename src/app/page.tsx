@@ -17,7 +17,8 @@ import { FundRecord, Transaction, DEFAULT_FUND_RECORDS, DEFAULT_TRANSACTIONS } f
 import { getMockStocks, selectStocks, createStockFromQuote, getHotStockCodes } from '@/lib/stockSelector';
 import { calculateFundDashboard } from '@/lib/fundCalculator';
 import { getStockQuotes } from '@/lib/stockQuote';
-import { TrendingUp, Filter, RefreshCw, AlertCircle, CheckCircle, Save, ChevronDown, ChevronUp, DollarSign, List, Upload, Plus, Play } from 'lucide-react';
+import { getStockList, getStocksByChange, searchStocks } from '@/lib/eastmoneyService';
+import { TrendingUp, Filter, RefreshCw, AlertCircle, CheckCircle, Save, ChevronDown, ChevronUp, DollarSign, List, Upload, Plus, Play, Search, Database } from 'lucide-react';
 
 export default function Home() {
   const [stocks, setStocks] = useState<Stock[]>([]);
@@ -57,6 +58,10 @@ export default function Home() {
   // 实时行情状态
   const [realtimeStocks, setRealtimeStocks] = useState<Stock[]>([]);
   const [isLoadingRealtime, setIsLoadingRealtime] = useState(false);
+  const [isLoadingAllStocks, setIsLoadingAllStocks] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // 计算资金看板数据
   useEffect(() => {
@@ -242,6 +247,75 @@ export default function Home() {
     }
   };
 
+  // 全A股筛选
+  const handleScreenAllStocks = async () => {
+    setIsLoadingAllStocks(true);
+    try {
+      // 获取所有涨幅符合条件的股票
+      const result = await getStocksByChange(filter.minChange, filter.maxChange);
+      
+      // 转换为Stock对象
+      const stocksWithQuotes = result.stocks.map((quote: any) => createStockFromQuote(quote));
+      
+      // 应用完整的筛选条件
+      const filteredStocks = selectStocks(stocksWithQuotes, filter);
+      
+      // 添加筛选时间
+      const now = new Date();
+      const timestamp = now.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      
+      const filteredWithTime = filteredStocks.map(stock => ({
+        ...stock,
+        filterTimestamp: timestamp
+      }));
+      
+      // 更新状态
+      setAllStocksWithTime(prev => [...filteredWithTime, ...prev]);
+      
+      alert(`成功从全A股中筛选出${filteredStocks.length}只符合条件的股票`);
+    } catch (error) {
+      console.error('全A股筛选失败:', error);
+      alert('全A股筛选失败，请稍后重试');
+    } finally {
+      setIsLoadingAllStocks(false);
+    }
+  };
+
+  // 搜索股票
+  const handleSearchStocks = async (keyword: string) => {
+    if (keyword.length < 1) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const result = await searchStocks(keyword);
+      setSearchResults(result.stocks);
+    } catch (error) {
+      console.error('搜索股票失败:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // 防抖搜索
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleSearchStocks(searchKeyword);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchKeyword]);
+
   const toggleStockExpand = (stockCode: string) => {
     setExpandedStock(expandedStock === stockCode ? null : stockCode);
   };
@@ -275,6 +349,69 @@ export default function Home() {
 
           {/* 选股结果页面 */}
           <TabsContent value="results" className="space-y-6">
+            {/* 搜索栏 */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex gap-4 items-center">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="搜索股票代码或名称（如：600519 或 贵州茅台）"
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  {searchResults.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchKeyword('');
+                        setSearchResults([]);
+                      }}
+                    >
+                      清除搜索
+                    </Button>
+                  )}
+                </div>
+                
+                {/* 搜索结果 */}
+                {searchResults.length > 0 && (
+                  <div className="mt-4 border rounded-lg max-h-60 overflow-y-auto">
+                    {searchResults.slice(0, 20).map((stock) => (
+                      <div
+                        key={stock.code}
+                        className="flex justify-between items-center p-3 border-b last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer"
+                        onClick={() => {
+                          setSearchKeyword(`${stock.code} - ${stock.name}`);
+                          setSearchResults([]);
+                        }}
+                      >
+                        <div>
+                          <span className="font-semibold">{stock.code}</span>
+                          <span className="ml-2">{stock.name}</span>
+                        </div>
+                        <div className="flex gap-4">
+                          <span className={`font-bold ${stock.change >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            {stock.change?.toFixed(2)}%
+                          </span>
+                          <span className="text-slate-600 dark:text-slate-400">
+                            ¥{stock.price?.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {searchResults.length > 20 && (
+                      <div className="p-3 text-center text-sm text-slate-500">
+                        还有 {searchResults.length - 20} 条结果...
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-1">
@@ -304,7 +441,16 @@ export default function Home() {
                   size="sm"
                 >
                   <Play className={`h-4 w-4 mr-2 ${isLoadingRealtime ? 'animate-spin' : ''}`} />
-                  获取实时行情
+                  热门股票
+                </Button>
+                <Button
+                  onClick={handleScreenAllStocks}
+                  disabled={isLoadingAllStocks}
+                  variant="secondary"
+                  size="sm"
+                >
+                  <Database className={`h-4 w-4 mr-2 ${isLoadingAllStocks ? 'animate-spin' : ''}`} />
+                  全A股筛选
                 </Button>
               </div>
             </div>

@@ -12,13 +12,15 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Stock, FilterConfig, DEFAULT_FILTER } from '@/types/stock';
 import { getMockStocks, selectStocks } from '@/lib/stockSelector';
-import { TrendingUp, TrendingDown, Filter, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Filter, RefreshCw, AlertCircle, CheckCircle, Save } from 'lucide-react';
 
 export default function Home() {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [selectedStocks, setSelectedStocks] = useState<Stock[]>([]);
   const [filter, setFilter] = useState<FilterConfig>(DEFAULT_FILTER);
+  const [tempFilter, setTempFilter] = useState<FilterConfig>(DEFAULT_FILTER);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastSavedTime, setLastSavedTime] = useState<string>('');
 
   // 加载和筛选股票
   useEffect(() => {
@@ -40,8 +42,21 @@ export default function Home() {
     }, 1000);
   };
 
-  const updateFilter = (key: keyof FilterConfig, value: number) => {
-    setFilter((prev) => ({ ...prev, [key]: value }));
+  const updateTempFilter = (key: keyof FilterConfig, value: number) => {
+    setTempFilter((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveConfirm = () => {
+    setFilter(tempFilter);
+    const now = new Date();
+    setLastSavedTime(now.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }));
   };
 
   return (
@@ -205,21 +220,44 @@ export default function Home() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* 保存控制区域 */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>调整参数后请点击确认按钮生效</span>
+                    </div>
+                    {lastSavedTime && (
+                      <div className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                        上次保存时间：{lastSavedTime}
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    onClick={handleSaveConfirm}
+                    className="gap-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    保存并应用筛选条件
+                  </Button>
+                </div>
+
+                <Separator />
                 {/* 涨幅范围 */}
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between mb-2">
                       <Label>涨幅范围</Label>
                       <span className="text-sm text-slate-600 dark:text-slate-400">
-                        {filter.minChange}% - {filter.maxChange}%
+                        {tempFilter.minChange}% - {tempFilter.maxChange}%
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-xs text-slate-500 dark:text-slate-400">最小涨幅</Label>
                         <Slider
-                          value={[filter.minChange]}
-                          onValueChange={([value]) => updateFilter('minChange', value)}
+                          value={[tempFilter.minChange]}
+                          onValueChange={([value]) => updateTempFilter('minChange', value)}
                           max={10}
                           min={0}
                           step={0.5}
@@ -229,8 +267,8 @@ export default function Home() {
                       <div>
                         <Label className="text-xs text-slate-500 dark:text-slate-400">最大涨幅</Label>
                         <Slider
-                          value={[filter.maxChange]}
-                          onValueChange={([value]) => updateFilter('maxChange', value)}
+                          value={[tempFilter.maxChange]}
+                          onValueChange={([value]) => updateTempFilter('maxChange', value)}
                           max={15}
                           min={3}
                           step={0.5}
@@ -247,12 +285,12 @@ export default function Home() {
                     <div className="flex justify-between mb-2">
                       <Label>最小量比</Label>
                       <span className="text-sm text-slate-600 dark:text-slate-400">
-                        {filter.minVolumeRatio}
+                        {tempFilter.minVolumeRatio}
                       </span>
                     </div>
                     <Slider
-                      value={[filter.minVolumeRatio]}
-                      onValueChange={([value]) => updateFilter('minVolumeRatio', value)}
+                      value={[tempFilter.minVolumeRatio]}
+                      onValueChange={([value]) => updateTempFilter('minVolumeRatio', value)}
                       max={5}
                       min={1}
                       step={0.1}
@@ -266,15 +304,15 @@ export default function Home() {
                     <div className="flex justify-between mb-2">
                       <Label>换手率范围</Label>
                       <span className="text-sm text-slate-600 dark:text-slate-400">
-                        {filter.minTurnoverRate}% - {filter.maxTurnoverRate}%
+                        {tempFilter.minTurnoverRate}% - {tempFilter.maxTurnoverRate}%
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-xs text-slate-500 dark:text-slate-400">最小换手率</Label>
                         <Slider
-                          value={[filter.minTurnoverRate]}
-                          onValueChange={([value]) => updateFilter('minTurnoverRate', value)}
+                          value={[tempFilter.minTurnoverRate]}
+                          onValueChange={([value]) => updateTempFilter('minTurnoverRate', value)}
                           max={20}
                           min={0}
                           step={1}
@@ -284,8 +322,8 @@ export default function Home() {
                       <div>
                         <Label className="text-xs text-slate-500 dark:text-slate-400">最大换手率</Label>
                         <Slider
-                          value={[filter.maxTurnoverRate]}
-                          onValueChange={([value]) => updateFilter('maxTurnoverRate', value)}
+                          value={[tempFilter.maxTurnoverRate]}
+                          onValueChange={([value]) => updateTempFilter('maxTurnoverRate', value)}
                           max={30}
                           min={5}
                           step={1}
@@ -302,15 +340,15 @@ export default function Home() {
                     <div className="flex justify-between mb-2">
                       <Label>流通市值范围（亿）</Label>
                       <span className="text-sm text-slate-600 dark:text-slate-400">
-                        {filter.minMarketCap}亿 - {filter.maxMarketCap}亿
+                        {tempFilter.minMarketCap}亿 - {tempFilter.maxMarketCap}亿
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-xs text-slate-500 dark:text-slate-400">最小流通市值</Label>
                         <Slider
-                          value={[filter.minMarketCap]}
-                          onValueChange={([value]) => updateFilter('minMarketCap', value)}
+                          value={[tempFilter.minMarketCap]}
+                          onValueChange={([value]) => updateTempFilter('minMarketCap', value)}
                           max={200}
                           min={0}
                           step={5}
@@ -320,8 +358,8 @@ export default function Home() {
                       <div>
                         <Label className="text-xs text-slate-500 dark:text-slate-400">最大流通市值</Label>
                         <Slider
-                          value={[filter.maxMarketCap]}
-                          onValueChange={([value]) => updateFilter('maxMarketCap', value)}
+                          value={[tempFilter.maxMarketCap]}
+                          onValueChange={([value]) => updateTempFilter('maxMarketCap', value)}
                           max={1000}
                           min={10}
                           step={10}
@@ -342,8 +380,8 @@ export default function Home() {
                       </p>
                     </div>
                     <Switch
-                      checked={filter.requireAboveAveragePrice}
-                      onCheckedChange={(checked) => updateFilter('requireAboveAveragePrice', checked ? 1 : 0)}
+                      checked={tempFilter.requireAboveAveragePrice}
+                      onCheckedChange={(checked) => updateTempFilter('requireAboveAveragePrice', checked ? 1 : 0)}
                     />
                   </div>
 
@@ -354,12 +392,12 @@ export default function Home() {
                     <div className="flex justify-between mb-2">
                       <Label>20天内最少涨停天数</Label>
                       <span className="text-sm text-slate-600 dark:text-slate-400">
-                        {filter.minLimitUpDays20} 天
+                        {tempFilter.minLimitUpDays20} 天
                       </span>
                     </div>
                     <Slider
-                      value={[filter.minLimitUpDays20]}
-                      onValueChange={([value]) => updateFilter('minLimitUpDays20', value)}
+                      value={[tempFilter.minLimitUpDays20]}
+                      onValueChange={([value]) => updateTempFilter('minLimitUpDays20', value)}
                       max={10}
                       min={0}
                       step={1}
@@ -376,15 +414,15 @@ export default function Home() {
                     <div className="flex justify-between mb-2">
                       <Label>股价范围</Label>
                       <span className="text-sm text-slate-600 dark:text-slate-400">
-                        ¥{filter.minPrice} - ¥{filter.maxPrice}
+                        ¥{tempFilter.minPrice} - ¥{tempFilter.maxPrice}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-xs text-slate-500 dark:text-slate-400">最低价格</Label>
                         <Slider
-                          value={[filter.minPrice]}
-                          onValueChange={([value]) => updateFilter('minPrice', value)}
+                          value={[tempFilter.minPrice]}
+                          onValueChange={([value]) => updateTempFilter('minPrice', value)}
                           max={50}
                           min={1}
                           step={1}
@@ -394,8 +432,8 @@ export default function Home() {
                       <div>
                         <Label className="text-xs text-slate-500 dark:text-slate-400">最高价格</Label>
                         <Slider
-                          value={[filter.maxPrice]}
-                          onValueChange={([value]) => updateFilter('maxPrice', value)}
+                          value={[tempFilter.maxPrice]}
+                          onValueChange={([value]) => updateTempFilter('maxPrice', value)}
                           max={3000}
                           min={10}
                           step={5}

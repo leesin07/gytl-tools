@@ -11,9 +11,12 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Stock, FilterConfig, DEFAULT_FILTER } from '@/types/stock';
+import { FundRecord, Transaction, DEFAULT_FUND_RECORDS, DEFAULT_TRANSACTIONS } from '@/types/fund';
 import { getMockStocks, selectStocks } from '@/lib/stockSelector';
-import { TrendingUp, Filter, RefreshCw, AlertCircle, CheckCircle, Save, ChevronDown, ChevronUp } from 'lucide-react';
+import { calculateFundDashboard } from '@/lib/fundCalculator';
+import { TrendingUp, Filter, RefreshCw, AlertCircle, CheckCircle, Save, ChevronDown, ChevronUp, DollarSign, List, Upload, Plus } from 'lucide-react';
 
 export default function Home() {
   const [stocks, setStocks] = useState<Stock[]>([]);
@@ -23,6 +26,26 @@ export default function Home() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<string>('');
   const [expandedStock, setExpandedStock] = useState<string | null>(null);
+
+  // 资金管理状态
+  const [fundRecords, setFundRecords] = useState<FundRecord[]>(DEFAULT_FUND_RECORDS);
+  const [transactions, setTransactions] = useState<Transaction[]>(DEFAULT_TRANSACTIONS);
+  const [dashboardData, setDashboardData] = useState({
+    totalCapital: 0,
+    currentBalance: 0,
+    totalProfit: 0,
+    totalLoss: 0,
+    profitRate: 0,
+    winRate: 0,
+    profitLossRatio: 0,
+    totalTransactions: 0
+  });
+
+  // 计算资金看板数据
+  useEffect(() => {
+    const data = calculateFundDashboard(fundRecords, transactions);
+    setDashboardData(data);
+  }, [fundRecords, transactions]);
 
   // 加载和筛选股票
   const handleRefresh = () => {
@@ -91,9 +114,12 @@ export default function Home() {
         </div>
 
         <Tabs defaultValue="results" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
             <TabsTrigger value="results">
               选股结果 ({allStocksWithTime.length})
+            </TabsTrigger>
+            <TabsTrigger value="funds">
+              资金管理
             </TabsTrigger>
             <TabsTrigger value="settings">
               筛选条件
@@ -282,6 +308,239 @@ export default function Home() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* 资金管理页面 */}
+          <TabsContent value="funds" className="space-y-6">
+            <div className="space-y-6">
+              {/* 资金数据看板 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5" />
+                    资金及交易数据看板
+                  </CardTitle>
+                  <CardDescription>查看资金流转和交易统计信息</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                      <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">总本金</div>
+                      <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                        ¥{dashboardData.totalCapital.toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                      <div className="text-sm text-green-600 dark:text-green-400 mb-1">当前余额</div>
+                      <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+                        ¥{dashboardData.currentBalance.toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                      <div className="text-sm text-purple-600 dark:text-purple-400 mb-1">总盈利</div>
+                      <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                        ¥{dashboardData.totalProfit.toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg">
+                      <div className="text-sm text-red-600 dark:text-red-400 mb-1">总亏损</div>
+                      <div className="text-2xl font-bold text-red-900 dark:text-red-100">
+                        ¥{dashboardData.totalLoss.toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                      <div className="text-sm text-orange-600 dark:text-orange-400 mb-1">盈利率</div>
+                      <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                        {dashboardData.profitRate.toFixed(2)}%
+                      </div>
+                    </div>
+                    <div className="p-4 bg-cyan-50 dark:bg-cyan-950 rounded-lg">
+                      <div className="text-sm text-cyan-600 dark:text-cyan-400 mb-1">胜率</div>
+                      <div className="text-2xl font-bold text-cyan-900 dark:text-cyan-100">
+                        {dashboardData.winRate.toFixed(1)}%
+                      </div>
+                    </div>
+                    <div className="p-4 bg-pink-50 dark:bg-pink-950 rounded-lg">
+                      <div className="text-sm text-pink-600 dark:text-pink-400 mb-1">盈亏比</div>
+                      <div className="text-2xl font-bold text-pink-900 dark:text-pink-100">
+                        {dashboardData.profitLossRatio.toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-lg">
+                      <div className="text-sm text-slate-600 dark:text-slate-400 mb-1">交易次数</div>
+                      <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                        {dashboardData.totalTransactions} 笔
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 操作列表 */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <List className="h-5 w-5" />
+                        操作列表
+                      </CardTitle>
+                      <CardDescription>
+                        资金流水和交易记录
+                      </CardDescription>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Upload className="h-4 w-4 mr-2" />
+                      导入数据
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="funds" className="w-full">
+                    <TabsList>
+                      <TabsTrigger value="funds">资金流水</TabsTrigger>
+                      <TabsTrigger value="transactions">交易记录</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="funds" className="mt-4">
+                      {fundRecords.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                          暂无资金流水记录
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {fundRecords.map((record, index) => (
+                            <div key={index} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                              <div>
+                                <div className="font-medium">{record.type}</div>
+                                <div className="text-sm text-slate-600 dark:text-slate-400">
+                                  {record.date}
+                                </div>
+                              </div>
+                              <div className={`text-lg font-bold ${record.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                {record.amount > 0 ? '+' : ''}¥{record.amount.toFixed(2)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </TabsContent>
+                    
+                    <TabsContent value="transactions" className="mt-4">
+                      {transactions.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                          暂无交易记录
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {transactions.map((tx, index) => (
+                            <div key={index} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                              <div>
+                                <div className="font-medium">{tx.stockCode} - {tx.stockName}</div>
+                                <div className="text-sm text-slate-600 dark:text-slate-400">
+                                  {tx.date} · {tx.type === 'buy' ? '买入' : '卖出'} · {tx.quantity}股
+                                </div>
+                              </div>
+                              <div className={`text-lg font-bold ${(tx.profitLoss ?? 0) > 0 ? 'text-green-600 dark:text-green-400' : (tx.profitLoss ?? 0) < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-400'}`}>
+                                {tx.profitLoss !== undefined && tx.profitLoss !== 0 ? (tx.profitLoss > 0 ? '+' : '') + '¥' + tx.profitLoss.toFixed(2) : tx.type === 'buy' ? '持有中' : '¥0.00'}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+
+              {/* 录入表单 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Plus className="h-5 w-5" />
+                    录入资金和交易
+                  </CardTitle>
+                  <CardDescription>添加新的资金操作或交易记录</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="fund" className="w-full">
+                    <TabsList>
+                      <TabsTrigger value="fund">资金录入</TabsTrigger>
+                      <TabsTrigger value="transaction">交易录入</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="fund" className="mt-4 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>操作类型</Label>
+                          <Select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="选择类型" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="deposit">入金</SelectItem>
+                              <SelectItem value="withdraw">出金</SelectItem>
+                              <SelectItem value="transfer">转账</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>金额</Label>
+                          <Input type="number" placeholder="0.00" />
+                        </div>
+                        <div>
+                          <Label>日期</Label>
+                          <Input type="date" />
+                        </div>
+                        <div>
+                          <Label>备注</Label>
+                          <Input placeholder="可选备注" />
+                        </div>
+                      </div>
+                      <Button className="w-full">添加资金记录</Button>
+                    </TabsContent>
+                    
+                    <TabsContent value="transaction" className="mt-4 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>交易类型</Label>
+                          <Select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="选择类型" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="buy">买入</SelectItem>
+                              <SelectItem value="sell">卖出</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>股票代码</Label>
+                          <Input placeholder="如：000001" />
+                        </div>
+                        <div>
+                          <Label>股票名称</Label>
+                          <Input placeholder="如：平安银行" />
+                        </div>
+                        <div>
+                          <Label>数量</Label>
+                          <Input type="number" placeholder="100" />
+                        </div>
+                        <div>
+                          <Label>价格</Label>
+                          <Input type="number" placeholder="10.00" />
+                        </div>
+                        <div>
+                          <Label>日期</Label>
+                          <Input type="date" />
+                        </div>
+                      </div>
+                      <Button className="w-full">添加交易记录</Button>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* 筛选条件页面 */}

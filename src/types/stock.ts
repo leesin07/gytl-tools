@@ -17,6 +17,7 @@ export interface Stock {
   limitUpDays20: number; // 20天内涨停天数
   score: number; // 综合评分
   reasons: string[]; // 符合条件的原因
+  filterTimestamp: string; // 筛选时间
 }
 
 // 选股条件配置

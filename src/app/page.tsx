@@ -11,38 +11,45 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Stock, FilterConfig, FilterHistory, DEFAULT_FILTER } from '@/types/stock';
+import { Stock, FilterConfig, DEFAULT_FILTER } from '@/types/stock';
 import { getMockStocks, selectStocks } from '@/lib/stockSelector';
-import { TrendingUp, TrendingDown, Filter, RefreshCw, AlertCircle, CheckCircle, Save, History, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, Filter, RefreshCw, AlertCircle, CheckCircle, Save, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function Home() {
   const [stocks, setStocks] = useState<Stock[]>([]);
-  const [selectedStocks, setSelectedStocks] = useState<Stock[]>([]);
+  const [allStocksWithTime, setAllStocksWithTime] = useState<Stock[]>([]);
   const [filter, setFilter] = useState<FilterConfig>(DEFAULT_FILTER);
   const [tempFilter, setTempFilter] = useState<FilterConfig>(DEFAULT_FILTER);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<string>('');
-  const [filterHistory, setFilterHistory] = useState<FilterHistory[]>([]);
-  const [currentHistoryIndex, setCurrentHistoryIndex] = useState<number | null>(null);
   const [expandedStock, setExpandedStock] = useState<string | null>(null);
 
   // 加载和筛选股票
-  useEffect(() => {
-    loadStocks();
-  }, [filter]);
-
-  const loadStocks = () => {
-    const allStocks = getMockStocks();
-    setStocks(allStocks);
-    const filtered = selectStocks(allStocks, filter);
-    setSelectedStocks(filtered);
-  };
-
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => {
-      loadStocks();
-      saveHistory();
+      const allStocks = getMockStocks();
+      setStocks(allStocks);
+      const filtered = selectStocks(allStocks, filter);
+      
+      // 添加筛选时间
+      const now = new Date();
+      const timestamp = now.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      
+      const filteredWithTime = filtered.map(stock => ({
+        ...stock,
+        filterTimestamp: timestamp
+      }));
+      
+      // 添加到列表最前面
+      setAllStocksWithTime(prev => [...filteredWithTime, ...prev]);
       setIsRefreshing(false);
     }, 1000);
   };
@@ -63,33 +70,6 @@ export default function Home() {
       second: '2-digit'
     });
     setLastSavedTime(timeStr);
-  };
-
-  const saveHistory = () => {
-    const historyItem: FilterHistory = {
-      id: Date.now().toString(),
-      timestamp: new Date().toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }),
-      filter: { ...filter },
-      stocks: [...selectedStocks],
-      count: selectedStocks.length
-    };
-    setFilterHistory((prev) => [historyItem, ...prev]);
-    setCurrentHistoryIndex(0);
-  };
-
-  const handleViewHistory = (index: number) => {
-    const historyItem = filterHistory[index];
-    setSelectedStocks(historyItem.stocks);
-    setFilter(historyItem.filter);
-    setTempFilter(historyItem.filter);
-    setCurrentHistoryIndex(index);
   };
 
   const toggleStockExpand = (stockCode: string) => {
@@ -113,7 +93,7 @@ export default function Home() {
         <Tabs defaultValue="results" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
             <TabsTrigger value="results">
-              选股结果 ({selectedStocks.length})
+              选股结果 ({allStocksWithTime.length})
             </TabsTrigger>
             <TabsTrigger value="settings">
               筛选条件
@@ -125,15 +105,13 @@ export default function Home() {
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-1">
-                  当前筛选结果
+                  所有筛选结果
                 </h2>
                 <div className="text-sm text-slate-600 dark:text-slate-400">
-                  共筛选出 <span className="font-bold text-blue-600">{selectedStocks.length}</span> 只股票
-                  {currentHistoryIndex !== null && (
-                    <span className="ml-3 text-xs text-slate-500">
-                      （查看历史记录 #{filterHistory.length - currentHistoryIndex}）
-                    </span>
-                  )}
+                  共 <span className="font-bold text-blue-600">{allStocksWithTime.length}</span> 条筛选记录
+                  <span className="ml-2 text-xs text-slate-500">
+                    （按筛选时间倒序排列）
+                  </span>
                 </div>
               </div>
               <Button
@@ -147,15 +125,15 @@ export default function Home() {
               </Button>
             </div>
 
-            {selectedStocks.length === 0 ? (
+            {allStocksWithTime.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-16">
                   <AlertCircle className="h-16 w-16 text-slate-400 mb-4" />
                   <p className="text-slate-600 dark:text-slate-400 text-lg mb-2">
-                    没有符合条件的股票
+                    暂无筛选结果
                   </p>
                   <p className="text-slate-500 dark:text-slate-500 text-sm">
-                    请调整筛选条件后重新筛选
+                    点击"刷新数据"按钮开始筛选
                   </p>
                 </CardContent>
               </Card>
@@ -165,6 +143,7 @@ export default function Home() {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-slate-50 dark:bg-slate-800">
+                        <TableHead className="w-[150px]">筛选时间</TableHead>
                         <TableHead className="w-[120px]">股票代码</TableHead>
                         <TableHead className="w-[150px]">股票名称</TableHead>
                         <TableHead className="text-right">当前价格</TableHead>
@@ -177,9 +156,12 @@ export default function Home() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {selectedStocks.map((stock) => (
-                        <React.Fragment key={stock.code}>
+                      {allStocksWithTime.map((stock) => (
+                        <React.Fragment key={`${stock.code}-${stock.filterTimestamp}`}>
                           <TableRow key={`${stock.code}-main`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                            <TableCell className="text-xs text-slate-600 dark:text-slate-400 font-mono">
+                              {stock.filterTimestamp}
+                            </TableCell>
                             <TableCell className="font-mono text-sm">{stock.code}</TableCell>
                             <TableCell className="font-medium">{stock.name}</TableCell>
                             <TableCell className="text-right font-bold">¥{stock.price.toFixed(2)}</TableCell>
@@ -299,68 +281,6 @@ export default function Home() {
                   </Table>
                 </CardContent>
               </Card>
-            )}
-
-            {/* 筛选历史记录 */}
-            {filterHistory.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                    <History className="h-5 w-5 text-blue-600" />
-                    筛选历史 ({filterHistory.length})
-                  </h2>
-                </div>
-                
-                <div className="space-y-3">
-                  {filterHistory.map((history, index) => (
-                    <Card
-                      key={history.id}
-                      className={`cursor-pointer transition-all ${
-                        currentHistoryIndex === index
-                          ? 'border-blue-600 bg-blue-50 dark:bg-blue-950'
-                          : 'hover:border-blue-300'
-                      }`}
-                      onClick={() => handleViewHistory(index)}
-                    >
-                      <CardHeader className="pb-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-lg">
-                              筛选记录 #{filterHistory.length - index}
-                            </CardTitle>
-                            <CardDescription className="text-sm">
-                              筛选时间：{history.timestamp}
-                            </CardDescription>
-                          </div>
-                          <Badge variant="outline" className="text-blue-600 border-blue-600">
-                            {history.count} 只股票
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-600 dark:text-slate-400">
-                          <div>
-                            <span className="font-medium">涨幅：</span>
-                            {history.filter.minChange}% - {history.filter.maxChange}%
-                          </div>
-                          <div>
-                            <span className="font-medium">量比：</span>
-                            ≥{history.filter.minVolumeRatio}
-                          </div>
-                          <div>
-                            <span className="font-medium">换手率：</span>
-                            {history.filter.minTurnoverRate}% - {history.filter.maxTurnoverRate}%
-                          </div>
-                          <div>
-                            <span className="font-medium">市值：</span>
-                            {history.filter.minMarketCap} - {history.filter.maxMarketCap}亿
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
             )}
           </TabsContent>
 

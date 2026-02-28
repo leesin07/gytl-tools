@@ -20,6 +20,7 @@ const mockStocks: Stock[] = [
     limitUpDays20: 2,
     score: 85,
     reasons: [],
+    filterTimestamp: '',
   },
   {
     code: '000001',
@@ -39,6 +40,7 @@ const mockStocks: Stock[] = [
     limitUpDays20: 1,
     score: 82,
     reasons: [],
+    filterTimestamp: '',
   },
   {
     code: '000002',
@@ -58,6 +60,7 @@ const mockStocks: Stock[] = [
     limitUpDays20: 3,
     score: 88,
     reasons: [],
+    filterTimestamp: '',
   },
   {
     code: '000858',
@@ -77,6 +80,7 @@ const mockStocks: Stock[] = [
     limitUpDays20: 0,
     score: 75,
     reasons: [],
+    filterTimestamp: '',
   },
   {
     code: '600519',
@@ -96,6 +100,7 @@ const mockStocks: Stock[] = [
     limitUpDays20: 0,
     score: 70,
     reasons: [],
+    filterTimestamp: '',
   },
   {
     code: '002594',
@@ -115,6 +120,7 @@ const mockStocks: Stock[] = [
     limitUpDays20: 2,
     score: 80,
     reasons: [],
+    filterTimestamp: '',
   },
   {
     code: '600036',
@@ -134,6 +140,7 @@ const mockStocks: Stock[] = [
     limitUpDays20: 2,
     score: 84,
     reasons: [],
+    filterTimestamp: '',
   },
   {
     code: '300750',
@@ -153,6 +160,7 @@ const mockStocks: Stock[] = [
     limitUpDays20: 1,
     score: 82,
     reasons: [],
+    filterTimestamp: '',
   },
 ];
 

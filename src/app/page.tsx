@@ -14,9 +14,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Stock, FilterConfig, DEFAULT_FILTER } from '@/types/stock';
 import { FundRecord, Transaction, DEFAULT_FUND_RECORDS, DEFAULT_TRANSACTIONS } from '@/types/fund';
-import { getMockStocks, selectStocks } from '@/lib/stockSelector';
+import { getMockStocks, selectStocks, createStockFromQuote, getHotStockCodes } from '@/lib/stockSelector';
 import { calculateFundDashboard } from '@/lib/fundCalculator';
-import { TrendingUp, Filter, RefreshCw, AlertCircle, CheckCircle, Save, ChevronDown, ChevronUp, DollarSign, List, Upload, Plus } from 'lucide-react';
+import { getStockQuotes } from '@/lib/stockQuote';
+import { TrendingUp, Filter, RefreshCw, AlertCircle, CheckCircle, Save, ChevronDown, ChevronUp, DollarSign, List, Upload, Plus, Play } from 'lucide-react';
 
 export default function Home() {
   const [stocks, setStocks] = useState<Stock[]>([]);
@@ -52,6 +53,10 @@ export default function Home() {
     date: new Date().toISOString().split('T')[0],
     note: ''
   });
+
+  // 实时行情状态
+  const [realtimeStocks, setRealtimeStocks] = useState<Stock[]>([]);
+  const [isLoadingRealtime, setIsLoadingRealtime] = useState(false);
 
   // 计算资金看板数据
   useEffect(() => {
@@ -190,6 +195,53 @@ export default function Home() {
     alert('交易记录已添加');
   };
 
+  // 获取实时行情
+  const handleGetRealtimeQuotes = async () => {
+    setIsLoadingRealtime(true);
+    try {
+      // 获取热门股票的实时行情
+      const codes = getHotStockCodes().join(',');
+      const quotes = await getStockQuotes(codes);
+      
+      // 转换为Stock对象
+      const stocksWithQuotes = quotes.map(quote => createStockFromQuote(quote));
+      
+      // 应用筛选条件
+      const filteredStocks = selectStocks(stocksWithQuotes, filter);
+      
+      // 添加筛选时间
+      const now = new Date();
+      const timestamp = now.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      
+      const filteredWithTime = filteredStocks.map(stock => ({
+        ...stock,
+        filterTimestamp: timestamp
+      }));
+      
+      // 更新状态
+      setRealtimeStocks(filteredWithTime);
+      
+      // 如果有筛选结果，也添加到主列表
+      if (filteredWithTime.length > 0) {
+        setAllStocksWithTime(prev => [...filteredWithTime, ...prev]);
+      }
+      
+      alert(`成功获取实时行情，共${quotes.length}只股票，筛选出${filteredStocks.length}只符合条件`);
+    } catch (error) {
+      console.error('获取实时行情失败:', error);
+      alert('获取实时行情失败，请稍后重试');
+    } finally {
+      setIsLoadingRealtime(false);
+    }
+  };
+
   const toggleStockExpand = (stockCode: string) => {
     setExpandedStock(expandedStock === stockCode ? null : stockCode);
   };
@@ -235,15 +287,26 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <Button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                variant="outline"
-                size="sm"
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                刷新数据
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  variant="outline"
+                  size="sm"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  刷新数据
+                </Button>
+                <Button
+                  onClick={handleGetRealtimeQuotes}
+                  disabled={isLoadingRealtime}
+                  variant="default"
+                  size="sm"
+                >
+                  <Play className={`h-4 w-4 mr-2 ${isLoadingRealtime ? 'animate-spin' : ''}`} />
+                  获取实时行情
+                </Button>
+              </div>
             </div>
 
             {allStocksWithTime.length === 0 ? (

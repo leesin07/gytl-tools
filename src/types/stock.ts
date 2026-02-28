@@ -4,7 +4,9 @@ export interface Stock {
   name: string; // 股票名称
   price: number; // 当前价格
   change: number; // 涨跌幅（百分比）
+  priceChange: number; // 涨跌额
   volume: number; // 成交量（手）
+  turnover: number; // 成交额（元）
   turnoverRate: number; // 换手率（百分比）
   volumeRatio: number; // 量比
   marketCap: number; // 流通市值（亿）
@@ -18,6 +20,15 @@ export interface Stock {
   score: number; // 综合评分
   reasons: string[]; // 符合条件的原因
   filterTimestamp: string; // 筛选时间
+  
+  // 实时行情扩展字段
+  openPrice: number; // 开盘价
+  closePrice: number; // 昨收价
+  highPrice: number; // 今日最高
+  lowPrice: number; // 今日最低
+  buy1: number; // 买一价
+  sell1: number; // 卖一价
+  updateTime: string; // 更新时间
 }
 
 // 选股条件配置

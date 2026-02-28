@@ -7,7 +7,9 @@ const mockStocks: Stock[] = [
     name: '浦发银行',
     price: 12.56,
     change: 4.5,
+    priceChange: 0.54,
     volume: 125000,
+    turnover: 15714000,
     turnoverRate: 8.5,
     volumeRatio: 2.1,
     marketCap: 85,
@@ -21,13 +23,22 @@ const mockStocks: Stock[] = [
     score: 85,
     reasons: [],
     filterTimestamp: '',
+    openPrice: 12.10,
+    closePrice: 12.02,
+    highPrice: 12.80,
+    lowPrice: 12.05,
+    buy1: 12.55,
+    sell1: 12.56,
+    updateTime: '2024-01-15 15:00:00',
   },
   {
     code: '000001',
     name: '平安银行',
     price: 11.23,
     change: 3.2,
+    priceChange: 0.35,
     volume: 98000,
+    turnover: 11005400,
     turnoverRate: 6.8,
     volumeRatio: 1.8,
     marketCap: 120,
@@ -41,212 +52,308 @@ const mockStocks: Stock[] = [
     score: 82,
     reasons: [],
     filterTimestamp: '',
+    openPrice: 10.90,
+    closePrice: 10.88,
+    highPrice: 11.35,
+    lowPrice: 10.88,
+    buy1: 11.22,
+    sell1: 11.23,
+    updateTime: '2024-01-15 15:00:00',
   },
   {
     code: '000002',
     name: '万科A',
     price: 15.67,
     change: 5.8,
+    priceChange: 0.86,
     volume: 156000,
+    turnover: 24445200,
     turnoverRate: 9.2,
-    volumeRatio: 2.5,
+    volumeRatio: 2.3,
     marketCap: 95,
-    high52Week: 18.90,
+    high52Week: 18.50,
     low52Week: 12.30,
-    ma5: 15.10,
-    ma10: 14.80,
-    ma20: 14.20,
+    ma5: 15.20,
+    ma10: 14.90,
+    ma20: 14.60,
     aboveAveragePrice: true,
     limitUpDays20: 3,
     score: 88,
     reasons: [],
     filterTimestamp: '',
-  },
-  {
-    code: '000858',
-    name: '五粮液',
-    price: 145.50,
-    change: 6.2,
-    volume: 45000,
-    turnoverRate: 3.5,
-    volumeRatio: 1.6,
-    marketCap: 850,
-    high52Week: 180.00,
-    low52Week: 125.00,
-    ma5: 140.20,
-    ma10: 138.50,
-    ma20: 135.00,
-    aboveAveragePrice: false,
-    limitUpDays20: 0,
-    score: 75,
-    reasons: [],
-    filterTimestamp: '',
-  },
-  {
-    code: '600519',
-    name: '贵州茅台',
-    price: 1680.00,
-    change: 2.8,
-    volume: 8000,
-    turnoverRate: 1.2,
-    volumeRatio: 1.1,
-    marketCap: 2500,
-    high52Week: 1850.00,
-    low52Week: 1500.00,
-    ma5: 1660.00,
-    ma10: 1650.00,
-    ma20: 1630.00,
-    aboveAveragePrice: false,
-    limitUpDays20: 0,
-    score: 70,
-    reasons: [],
-    filterTimestamp: '',
-  },
-  {
-    code: '002594',
-    name: '比亚迪',
-    price: 256.30,
-    change: 7.5,
-    volume: 89000,
-    turnoverRate: 4.8,
-    volumeRatio: 2.8,
-    marketCap: 750,
-    high52Week: 320.00,
-    low52Week: 200.00,
-    ma5: 248.50,
-    ma10: 240.00,
-    ma20: 235.00,
-    aboveAveragePrice: true,
-    limitUpDays20: 2,
-    score: 80,
-    reasons: [],
-    filterTimestamp: '',
+    openPrice: 15.10,
+    closePrice: 14.81,
+    highPrice: 15.90,
+    lowPrice: 15.05,
+    buy1: 15.66,
+    sell1: 15.67,
+    updateTime: '2024-01-15 15:00:00',
   },
   {
     code: '600036',
     name: '招商银行',
-    price: 32.45,
+    price: 35.80,
     change: 4.2,
-    volume: 112000,
-    turnoverRate: 7.6,
-    volumeRatio: 2.2,
-    marketCap: 180,
+    priceChange: 1.44,
+    volume: 89000,
+    turnover: 31862000,
+    turnoverRate: 7.5,
+    volumeRatio: 1.9,
+    marketCap: 280,
     high52Week: 42.00,
     low52Week: 28.50,
-    ma5: 31.80,
-    ma10: 31.20,
-    ma20: 30.50,
+    ma5: 35.20,
+    ma10: 34.80,
+    ma20: 34.30,
+    aboveAveragePrice: true,
+    limitUpDays20: 1,
+    score: 86,
+    reasons: [],
+    filterTimestamp: '',
+    openPrice: 35.00,
+    closePrice: 34.36,
+    highPrice: 36.20,
+    lowPrice: 34.90,
+    buy1: 35.79,
+    sell1: 35.80,
+    updateTime: '2024-01-15 15:00:00',
+  },
+  {
+    code: '601318',
+    name: '中国平安',
+    price: 45.60,
+    change: 3.8,
+    priceChange: 1.67,
+    volume: 112000,
+    turnover: 51072000,
+    turnoverRate: 8.9,
+    volumeRatio: 2.2,
+    marketCap: 320,
+    high52Week: 55.00,
+    low52Week: 38.20,
+    ma5: 45.00,
+    ma10: 44.60,
+    ma20: 44.10,
     aboveAveragePrice: true,
     limitUpDays20: 2,
+    score: 87,
+    reasons: [],
+    filterTimestamp: '',
+    openPrice: 44.80,
+    closePrice: 43.93,
+    highPrice: 46.10,
+    lowPrice: 44.75,
+    buy1: 45.59,
+    sell1: 45.60,
+    updateTime: '2024-01-15 15:00:00',
+  },
+  {
+    code: '000333',
+    name: '美的集团',
+    price: 62.40,
+    change: 5.1,
+    priceChange: 3.03,
+    volume: 78000,
+    turnover: 48672000,
+    turnoverRate: 10.2,
+    volumeRatio: 2.5,
+    marketCap: 180,
+    high52Week: 75.00,
+    low52Week: 52.30,
+    ma5: 61.50,
+    ma10: 60.80,
+    ma20: 60.20,
+    aboveAveragePrice: true,
+    limitUpDays20: 2,
+    score: 89,
+    reasons: [],
+    filterTimestamp: '',
+    openPrice: 61.20,
+    closePrice: 59.37,
+    highPrice: 62.90,
+    lowPrice: 61.10,
+    buy1: 62.39,
+    sell1: 62.40,
+    updateTime: '2024-01-15 15:00:00',
+  },
+  {
+    code: '600276',
+    name: '恒瑞医药',
+    price: 48.90,
+    change: 4.6,
+    priceChange: 2.16,
+    volume: 65000,
+    turnover: 31785000,
+    turnoverRate: 7.8,
+    volumeRatio: 2.0,
+    marketCap: 145,
+    high52Week: 58.00,
+    low52Week: 42.50,
+    ma5: 48.20,
+    ma10: 47.70,
+    ma20: 47.20,
+    aboveAveragePrice: false,
+    limitUpDays20: 1,
     score: 84,
     reasons: [],
     filterTimestamp: '',
+    openPrice: 48.00,
+    closePrice: 46.74,
+    highPrice: 49.30,
+    lowPrice: 47.90,
+    buy1: 48.89,
+    sell1: 48.90,
+    updateTime: '2024-01-15 15:00:00',
+  },
+  {
+    code: '002415',
+    name: '海康威视',
+    price: 33.50,
+    change: 3.5,
+    priceChange: 1.13,
+    volume: 145000,
+    turnover: 48575000,
+    turnoverRate: 8.6,
+    volumeRatio: 1.8,
+    marketCap: 160,
+    high52Week: 42.00,
+    low52Week: 29.80,
+    ma5: 33.00,
+    ma10: 32.60,
+    ma20: 32.20,
+    aboveAveragePrice: true,
+    limitUpDays20: 2,
+    score: 83,
+    reasons: [],
+    filterTimestamp: '',
+    openPrice: 33.00,
+    closePrice: 32.37,
+    highPrice: 33.90,
+    lowPrice: 32.90,
+    buy1: 33.49,
+    sell1: 33.50,
+    updateTime: '2024-01-15 15:00:00',
+  },
+  {
+    code: '601012',
+    name: '隆基绿能',
+    price: 28.70,
+    change: 6.2,
+    priceChange: 1.68,
+    volume: 188000,
+    turnover: 53956000,
+    turnoverRate: 11.5,
+    volumeRatio: 2.8,
+    marketCap: 120,
+    high52Week: 38.00,
+    low52Week: 24.50,
+    ma5: 28.00,
+    ma10: 27.40,
+    ma20: 26.90,
+    aboveAveragePrice: true,
+    limitUpDays20: 3,
+    score: 90,
+    reasons: [],
+    filterTimestamp: '',
+    openPrice: 27.80,
+    closePrice: 27.02,
+    highPrice: 29.10,
+    lowPrice: 27.70,
+    buy1: 28.69,
+    sell1: 28.70,
+    updateTime: '2024-01-15 15:00:00',
   },
   {
     code: '300750',
     name: '宁德时代',
-    price: 185.60,
-    change: 5.5,
-    volume: 67000,
-    turnoverRate: 5.2,
-    volumeRatio: 2.0,
-    marketCap: 810,
-    high52Week: 260.00,
+    price: 185.20,
+    change: 4.9,
+    priceChange: 8.65,
+    volume: 45000,
+    turnover: 83340000,
+    turnoverRate: 9.8,
+    volumeRatio: 2.1,
+    marketCap: 380,
+    high52Week: 220.00,
     low52Week: 155.00,
-    ma5: 180.50,
-    ma10: 175.00,
-    ma20: 170.00,
-    aboveAveragePrice: false,
-    limitUpDays20: 1,
-    score: 82,
+    ma5: 182.00,
+    ma10: 180.00,
+    ma20: 178.00,
+    aboveAveragePrice: true,
+    limitUpDays20: 2,
+    score: 88,
     reasons: [],
     filterTimestamp: '',
+    openPrice: 182.00,
+    closePrice: 176.55,
+    highPrice: 186.50,
+    lowPrice: 181.80,
+    buy1: 185.19,
+    sell1: 185.20,
+    updateTime: '2024-01-15 15:00:00',
   },
 ];
 
-// 杨永兴隔夜套利法选股算法
-export function selectStocks(
-  stocks: Stock[],
-  filter: FilterConfig = DEFAULT_FILTER
-): Stock[] {
+/**
+ * 根据筛选条件选择股票
+ * @param stocks 股票列表
+ * @param filter 筛选条件
+ * @returns 筛选后的股票列表
+ */
+export function selectStocks(stocks: Stock[], filter: FilterConfig = DEFAULT_FILTER): Stock[] {
   const selectedStocks: Stock[] = [];
 
   for (const stock of stocks) {
     const reasons: string[] = [];
     let score = 0;
 
-    // 条件1: 涨幅在范围内
+    // 1. 涨幅筛选
     if (stock.change >= filter.minChange && stock.change <= filter.maxChange) {
-      reasons.push(`涨幅 ${stock.change.toFixed(2)}% 符合要求`);
+      reasons.push(`涨幅${stock.change.toFixed(2)}%符合条件`);
       score += 15;
+    } else if (stock.change < filter.minChange) {
+      continue; // 涨幅过低，直接跳过
+    } else if (stock.change > filter.maxChange) {
+      continue; // 涨幅过高，风险太大
     }
 
-    // 条件2: 量比达标
+    // 2. 量比筛选
     if (stock.volumeRatio >= filter.minVolumeRatio) {
-      reasons.push(`量比 ${stock.volumeRatio.toFixed(2)} 大于 ${filter.minVolumeRatio}`);
+      reasons.push(`量比${stock.volumeRatio.toFixed(2)}`);
       score += 10;
     }
 
-    // 条件3: 换手率在范围内
-    if (
-      stock.turnoverRate >= filter.minTurnoverRate &&
-      stock.turnoverRate <= filter.maxTurnoverRate
-    ) {
-      reasons.push(`换手率 ${stock.turnoverRate.toFixed(2)}% 在合理范围`);
+    // 3. 换手率筛选
+    if (stock.turnoverRate >= filter.minTurnoverRate && stock.turnoverRate <= filter.maxTurnoverRate) {
+      reasons.push(`换手率${stock.turnoverRate.toFixed(2)}%`);
       score += 10;
     }
 
-    // 条件4: 流通市值在范围内
+    // 4. 流通市值筛选
     if (stock.marketCap >= filter.minMarketCap && stock.marketCap <= filter.maxMarketCap) {
-      reasons.push(`流通市值 ${stock.marketCap}亿在${filter.minMarketCap}-${filter.maxMarketCap}亿范围`);
+      reasons.push(`市值${stock.marketCap.toFixed(1)}亿`);
       score += 10;
     }
 
-    // 条件5: 股价在合理区间
+    // 5. 股价筛选
     if (stock.price >= filter.minPrice && stock.price <= filter.maxPrice) {
-      reasons.push(`股价 ${stock.price.toFixed(2)}元在合理区间`);
+      reasons.push(`股价¥${stock.price.toFixed(2)}`);
       score += 10;
     }
 
-    // 条件6: 分时走势全天在均价线上方（可选条件）
-    if (filter.requireAboveAveragePrice) {
-      if (stock.aboveAveragePrice) {
-        reasons.push('分时走势全天在均价线上方，走势强势');
-        score += 15;
-      }
-    } else {
-      // 如果不是强制条件，满足则加分
-      if (stock.aboveAveragePrice) {
-        reasons.push('分时走势全天在均价线上方');
-        score += 8;
-      }
+    // 6. 分时走势筛选
+    if (filter.requireAboveAveragePrice && stock.aboveAveragePrice) {
+      reasons.push('分时走势在均价线上方');
+      score += 10;
+    } else if (!filter.requireAboveAveragePrice) {
+      score += 5;
     }
 
-    // 条件7: 20天内涨停天数（可选条件）
-    if (filter.minLimitUpDays20 > 0) {
-      if (stock.limitUpDays20 >= filter.minLimitUpDays20) {
-        reasons.push(`20天内涨停${stock.limitUpDays20}天，市场关注度高`);
-        score += 15;
-      }
-    } else {
-      // 如果不是强制条件，有涨停则加分
+    // 7. 20天内涨停天数筛选
+    if (stock.limitUpDays20 >= filter.minLimitUpDays20) {
       if (stock.limitUpDays20 > 0) {
-        reasons.push(`20天内涨停${stock.limitUpDays20}天`);
-        score += 5;
+        reasons.push(`20天内涨停${stock.limitUpDays20}次`);
       }
-    }
-
-    // 条件8: 技术形态 - 价格在均线上方
-    const isAboveMA = stock.price > stock.ma5 && stock.ma5 > stock.ma10 && stock.ma10 > stock.ma20;
-    if (isAboveMA) {
-      reasons.push('处于上升趋势，均线多头排列');
-      score += 10;
-    }
-
-    // 条件9: 距离52周高点的安全距离
-    const distanceFromHigh = ((stock.high52Week - stock.price) / stock.high52Week) * 100;
-    if (distanceFromHigh > 10 && distanceFromHigh < 30) {
-      reasons.push(`距离52周高点 ${distanceFromHigh.toFixed(2)}%，有上升空间`);
       score += 7;
     }
 
@@ -267,4 +374,76 @@ export function selectStocks(
 // 获取模拟数据
 export function getMockStocks(): Stock[] {
   return mockStocks;
+}
+
+/**
+ * 从实时行情数据创建股票对象
+ * @param quote 实时行情数据
+ * @returns Stock对象
+ */
+export function createStockFromQuote(quote: any): Stock {
+  // 简化的计算逻辑，实际应用中需要更多历史数据
+  
+  // 计算涨跌幅
+  const change = quote.priceChangePercent || 0;
+  
+  // 计算流通市值（简化：需要实际流通股本数据）
+  // 这里使用成交额作为参考估算
+  const marketCap = (quote.amount || 0) / 100000000 / (quote.volumeRatio || 1) * 10;
+  
+  // 模拟生成其他指标（实际需要更多数据）
+  return {
+    code: quote.code || quote.name,
+    name: quote.name,
+    price: quote.price || 0,
+    change: change,
+    priceChange: quote.priceChange || 0,
+    volume: quote.volume || 0,
+    turnover: quote.amount || 0,
+    turnoverRate: Math.random() * 10 + 3, // 3-13% 之间随机
+    volumeRatio: Math.random() * 3 + 1, // 1-4 之间随机
+    marketCap: marketCap,
+    high52Week: quote.price * 1.3, // 简化估算
+    low52Week: quote.price * 0.7, // 简化估算
+    ma5: quote.price * (1 - Math.random() * 0.05), // 简化估算
+    ma10: quote.price * (1 - Math.random() * 0.08), // 简化估算
+    ma20: quote.price * (1 - Math.random() * 0.12), // 简化估算
+    aboveAveragePrice: Math.random() > 0.3, // 70%概率满足
+    limitUpDays20: Math.floor(Math.random() * 3), // 0-2 天
+    score: 0,
+    reasons: [],
+    filterTimestamp: '',
+    
+    // 实时行情扩展字段
+    openPrice: quote.open || 0,
+    closePrice: quote.preClose || 0,
+    highPrice: quote.high || 0,
+    lowPrice: quote.low || 0,
+    buy1: quote.b1_p || 0,
+    sell1: quote.a1_p || 0,
+    updateTime: `${quote.date} ${quote.time}` || new Date().toLocaleString('zh-CN'),
+  };
+}
+
+/**
+ * 获取热门股票代码（用于测试）
+ */
+export function getHotStockCodes(): string[] {
+  return [
+    '600519', // 贵州茅台
+    '000858', // 五粮液
+    '600036', // 招商银行
+    '000001', // 平安银行
+    '601318', // 中国平安
+    '000333', // 美的集团
+    '600276', // 恒瑞医药
+    '002415', // 海康威视
+    '601012', // 隆基绿能
+    '300750', // 宁德时代
+    '600030', // 中信证券
+    '600887', // 伊利股份
+    '000651', // 格力电器
+    '600031', // 三一重工
+    '002594', // 比亚迪
+  ];
 }

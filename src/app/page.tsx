@@ -111,12 +111,9 @@ export default function Home() {
         </div>
 
         <Tabs defaultValue="results" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
             <TabsTrigger value="results">
               选股结果 ({selectedStocks.length})
-            </TabsTrigger>
-            <TabsTrigger value="history">
-              筛选历史 ({filterHistory.length})
             </TabsTrigger>
             <TabsTrigger value="settings">
               筛选条件
@@ -125,14 +122,19 @@ export default function Home() {
 
           {/* 选股结果页面 */}
           <TabsContent value="results" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                共筛选出 <span className="font-bold text-blue-600">{selectedStocks.length}</span> 只股票
-                {currentHistoryIndex !== null && (
-                  <span className="ml-3 text-xs text-slate-500">
-                    （查看历史记录 #{filterHistory.length - currentHistoryIndex}）
-                  </span>
-                )}
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-1">
+                  当前筛选结果
+                </h2>
+                <div className="text-sm text-slate-600 dark:text-slate-400">
+                  共筛选出 <span className="font-bold text-blue-600">{selectedStocks.length}</span> 只股票
+                  {currentHistoryIndex !== null && (
+                    <span className="ml-3 text-xs text-slate-500">
+                      （查看历史记录 #{filterHistory.length - currentHistoryIndex}）
+                    </span>
+                  )}
+                </div>
               </div>
               <Button
                 onClick={handleRefresh}
@@ -298,75 +300,66 @@ export default function Home() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
 
-          {/* 筛选历史页面 */}
-          <TabsContent value="history" className="space-y-6">
-            <div className="text-sm text-slate-600 dark:text-slate-400">
-              共有 <span className="font-bold text-blue-600">{filterHistory.length}</span> 次筛选记录
-            </div>
-
-            {filterHistory.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-16">
-                  <History className="h-16 w-16 text-slate-400 mb-4" />
-                  <p className="text-slate-600 dark:text-slate-400 text-lg mb-2">
-                    暂无筛选历史
-                  </p>
-                  <p className="text-slate-500 dark:text-slate-500 text-sm">
-                    刷新数据后自动记录筛选历史
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
+            {/* 筛选历史记录 */}
+            {filterHistory.length > 0 && (
               <div className="space-y-4">
-                {filterHistory.map((history, index) => (
-                  <Card
-                    key={history.id}
-                    className={`cursor-pointer transition-all ${
-                      currentHistoryIndex === index
-                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-950'
-                        : 'hover:border-blue-300'
-                    }`}
-                    onClick={() => handleViewHistory(index)}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">
-                            筛选记录 #{filterHistory.length - index}
-                          </CardTitle>
-                          <CardDescription className="text-sm">
-                            筛选时间：{history.timestamp}
-                          </CardDescription>
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <History className="h-5 w-5 text-blue-600" />
+                    筛选历史 ({filterHistory.length})
+                  </h2>
+                </div>
+                
+                <div className="space-y-3">
+                  {filterHistory.map((history, index) => (
+                    <Card
+                      key={history.id}
+                      className={`cursor-pointer transition-all ${
+                        currentHistoryIndex === index
+                          ? 'border-blue-600 bg-blue-50 dark:bg-blue-950'
+                          : 'hover:border-blue-300'
+                      }`}
+                      onClick={() => handleViewHistory(index)}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-lg">
+                              筛选记录 #{filterHistory.length - index}
+                            </CardTitle>
+                            <CardDescription className="text-sm">
+                              筛选时间：{history.timestamp}
+                            </CardDescription>
+                          </div>
+                          <Badge variant="outline" className="text-blue-600 border-blue-600">
+                            {history.count} 只股票
+                          </Badge>
                         </div>
-                        <Badge variant="outline" className="text-blue-600 border-blue-600">
-                          {history.count} 只股票
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-600 dark:text-slate-400">
-                        <div>
-                          <span className="font-medium">涨幅范围：</span>
-                          {history.filter.minChange}% - {history.filter.maxChange}%
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-600 dark:text-slate-400">
+                          <div>
+                            <span className="font-medium">涨幅：</span>
+                            {history.filter.minChange}% - {history.filter.maxChange}%
+                          </div>
+                          <div>
+                            <span className="font-medium">量比：</span>
+                            ≥{history.filter.minVolumeRatio}
+                          </div>
+                          <div>
+                            <span className="font-medium">换手率：</span>
+                            {history.filter.minTurnoverRate}% - {history.filter.maxTurnoverRate}%
+                          </div>
+                          <div>
+                            <span className="font-medium">市值：</span>
+                            {history.filter.minMarketCap} - {history.filter.maxMarketCap}亿
+                          </div>
                         </div>
-                        <div>
-                          <span className="font-medium">量比：</span>
-                          ≥{history.filter.minVolumeRatio}
-                        </div>
-                        <div>
-                          <span className="font-medium">换手率：</span>
-                          {history.filter.minTurnoverRate}% - {history.filter.maxTurnoverRate}%
-                        </div>
-                        <div>
-                          <span className="font-medium">市值：</span>
-                          {history.filter.minMarketCap} - {history.filter.maxMarketCap}亿
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             )}
           </TabsContent>

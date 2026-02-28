@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       _: Date.now().toString(),
     });
 
-    let response: Response;
+    let response: Response | null = null;
     let useMockData = false;
     
     try {
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       useMockData = true;
     }
 
-    if (!useMockData && response.ok) {
+    if (!useMockData && response && response.ok) {
       const result: EastmoneyResponse = await response.json();
 
       if (result.rc !== 0) {

@@ -19,7 +19,10 @@ export interface Transaction {
   quantity: number; // 数量（股）
   amount: number; // 成交金额
   fee: number; // 手续费
+  buyPrice?: number; // 买入价（卖出时记录）
+  sellPrice?: number; // 卖出价
   profitLoss?: number; // 盈亏（卖出时计算）
+  profitRate?: number; // 收益率（%）
   balanceAfter?: number; // 交易后余额
   date: string; // 交易日期
   timestamp: string; // 时间戳
@@ -88,7 +91,10 @@ export const DEFAULT_TRANSACTIONS: Transaction[] = [
     quantity: 1000,
     amount: 11200,
     fee: 5.60,
+    buyPrice: 10.50,
+    sellPrice: 11.20,
     profitLoss: 689.15,
+    profitRate: 6.47,
     balanceAfter: 90178.15,
     date: '2024-01-11',
     timestamp: '2024-01-11 10:00:00',
@@ -118,7 +124,10 @@ export const DEFAULT_TRANSACTIONS: Transaction[] = [
     quantity: 50,
     amount: 87500,
     fee: 43.75,
-    profitLoss: -2411.15,
+    buyPrice: 1800.00,
+    sellPrice: 1750.00,
+    profitLoss: -2543.75,
+    profitRate: -2.78,
     balanceAfter: 86188.40,
     date: '2024-01-16',
     timestamp: '2024-01-16 09:45:00',

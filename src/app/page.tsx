@@ -41,6 +41,18 @@ export default function Home() {
     totalTransactions: 0
   });
 
+  // 交易录入表单状态
+  const [transactionForm, setTransactionForm] = useState({
+    type: 'buy' as 'buy' | 'sell',
+    stockCode: '',
+    stockName: '',
+    quantity: '',
+    price: '',
+    buyPrice: '', // 买入价（用于卖出时计算盈亏）
+    date: new Date().toISOString().split('T')[0],
+    note: ''
+  });
+
   // 计算资金看板数据
   useEffect(() => {
     const data = calculateFundDashboard(fundRecords, transactions);
@@ -93,6 +105,89 @@ export default function Home() {
       second: '2-digit'
     });
     setLastSavedTime(timeStr);
+  };
+
+  // 处理交易提交
+  const handleTransactionSubmit = () => {
+    const quantity = parseInt(transactionForm.quantity);
+    const price = parseFloat(transactionForm.price);
+    const buyPrice = parseFloat(transactionForm.buyPrice) || 0;
+
+    if (!transactionForm.stockCode || !transactionForm.stockName || !quantity || !price) {
+      alert('请填写完整的交易信息');
+      return;
+    }
+
+    // 计算成交金额和手续费（手续费率 0.05%）
+    const amount = quantity * price;
+    const fee = amount * 0.0005;
+
+    // 计算盈亏和收益率（仅卖出时计算）
+    let profitLoss = 0;
+    let profitRate = 0;
+
+    if (transactionForm.type === 'sell' && buyPrice > 0) {
+      const buyAmount = quantity * buyPrice;
+      const buyFee = buyAmount * 0.0005;
+      profitLoss = amount - fee - buyAmount - buyFee;
+      profitRate = (profitLoss / (buyAmount + buyFee)) * 100;
+    }
+
+    // 计算交易后余额
+    const lastBalance = fundRecords.length > 0 ? fundRecords[fundRecords.length - 1].balance : 0;
+    const balanceAfter = transactionForm.type === 'buy' 
+      ? lastBalance - amount - fee 
+      : lastBalance + amount - fee;
+
+    // 创建新交易记录
+    const newTransaction: Transaction = {
+      id: Date.now().toString(),
+      stockCode: transactionForm.stockCode,
+      stockName: transactionForm.stockName,
+      type: transactionForm.type,
+      price,
+      quantity,
+      amount,
+      fee,
+      buyPrice: transactionForm.type === 'sell' ? buyPrice : undefined,
+      sellPrice: transactionForm.type === 'sell' ? price : undefined,
+      profitLoss: transactionForm.type === 'sell' ? profitLoss : undefined,
+      profitRate: transactionForm.type === 'sell' ? profitRate : undefined,
+      balanceAfter,
+      date: transactionForm.date,
+      timestamp: new Date().toISOString(),
+      note: transactionForm.note || undefined
+    };
+
+    // 添加到交易列表
+    setTransactions(prev => [...prev, newTransaction]);
+
+    // 同时创建一条资金流水记录
+    const fundAmount = transactionForm.type === 'buy' ? -(amount + fee) : (amount - fee);
+    const newFundRecord: FundRecord = {
+      id: Date.now().toString() + '_fund',
+      date: transactionForm.date,
+      type: transactionForm.type === 'buy' ? 'withdraw' : 'deposit',
+      amount: fundAmount,
+      balance: balanceAfter,
+      description: `${transactionForm.type === 'buy' ? '买入' : '卖出'} ${transactionForm.stockCode} ${transactionForm.stockName} ${quantity}股`,
+      timestamp: new Date().toISOString()
+    };
+    setFundRecords(prev => [...prev, newFundRecord]);
+
+    // 重置表单
+    setTransactionForm({
+      type: 'buy',
+      stockCode: '',
+      stockName: '',
+      quantity: '',
+      price: '',
+      buyPrice: '',
+      date: new Date().toISOString().split('T')[0],
+      note: ''
+    });
+
+    alert('交易记录已添加');
   };
 
   const toggleStockExpand = (stockCode: string) => {
@@ -408,20 +503,37 @@ export default function Home() {
                           暂无资金流水记录
                         </div>
                       ) : (
-                        <div className="space-y-2">
-                          {fundRecords.map((record, index) => (
-                            <div key={index} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                              <div>
-                                <div className="font-medium">{record.type}</div>
-                                <div className="text-sm text-slate-600 dark:text-slate-400">
-                                  {record.date}
-                                </div>
-                              </div>
-                              <div className={`text-lg font-bold ${record.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                {record.amount > 0 ? '+' : ''}¥{record.amount.toFixed(2)}
-                              </div>
-                            </div>
-                          ))}
+                        <div className="border rounded-lg overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>类型</TableHead>
+                                <TableHead>日期</TableHead>
+                                <TableHead>描述</TableHead>
+                                <TableHead className="text-right">金额</TableHead>
+                                <TableHead className="text-right">余额</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {fundRecords.map((record) => (
+                                <TableRow key={record.id}>
+                                  <TableCell className="font-medium">
+                                    {record.type === 'deposit' ? '入金' : 
+                                     record.type === 'withdraw' ? '出金' : 
+                                     record.type === 'profit' ? '盈利' : '亏损'}
+                                  </TableCell>
+                                  <TableCell>{record.date}</TableCell>
+                                  <TableCell className="text-slate-600 dark:text-slate-400">{record.description}</TableCell>
+                                  <TableCell className={`text-right font-bold ${record.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                    {record.amount > 0 ? '+' : ''}¥{record.amount.toFixed(2)}
+                                  </TableCell>
+                                  <TableCell className="text-right font-semibold">
+                                    ¥{record.balance.toFixed(2)}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
                         </div>
                       )}
                     </TabsContent>
@@ -432,20 +544,49 @@ export default function Home() {
                           暂无交易记录
                         </div>
                       ) : (
-                        <div className="space-y-2">
-                          {transactions.map((tx, index) => (
-                            <div key={index} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                              <div>
-                                <div className="font-medium">{tx.stockCode} - {tx.stockName}</div>
-                                <div className="text-sm text-slate-600 dark:text-slate-400">
-                                  {tx.date} · {tx.type === 'buy' ? '买入' : '卖出'} · {tx.quantity}股
-                                </div>
-                              </div>
-                              <div className={`text-lg font-bold ${(tx.profitLoss ?? 0) > 0 ? 'text-green-600 dark:text-green-400' : (tx.profitLoss ?? 0) < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-400'}`}>
-                                {tx.profitLoss !== undefined && tx.profitLoss !== 0 ? (tx.profitLoss > 0 ? '+' : '') + '¥' + tx.profitLoss.toFixed(2) : tx.type === 'buy' ? '持有中' : '¥0.00'}
-                              </div>
-                            </div>
-                          ))}
+                        <div className="border rounded-lg overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>股票代码</TableHead>
+                                <TableHead>股票名称</TableHead>
+                                <TableHead>类型</TableHead>
+                                <TableHead>日期</TableHead>
+                                <TableHead className="text-right">数量</TableHead>
+                                <TableHead className="text-right">价格</TableHead>
+                                <TableHead className="text-right">成交额</TableHead>
+                                <TableHead className="text-right">盈亏</TableHead>
+                                <TableHead className="text-right">收益率</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {transactions.map((tx) => (
+                                <TableRow key={tx.id}>
+                                  <TableCell className="font-medium">{tx.stockCode}</TableCell>
+                                  <TableCell>{tx.stockName}</TableCell>
+                                  <TableCell>
+                                    <Badge variant={tx.type === 'buy' ? 'default' : 'secondary'}>
+                                      {tx.type === 'buy' ? '买入' : '卖出'}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>{tx.date}</TableCell>
+                                  <TableCell className="text-right">{tx.quantity}</TableCell>
+                                  <TableCell className="text-right">¥{tx.price.toFixed(2)}</TableCell>
+                                  <TableCell className="text-right">¥{tx.amount.toFixed(2)}</TableCell>
+                                  <TableCell className={`text-right font-bold ${(tx.profitLoss ?? 0) > 0 ? 'text-green-600 dark:text-green-400' : (tx.profitLoss ?? 0) < 0 ? 'text-red-600 dark:text-red-400' : ''}`}>
+                                    {tx.profitLoss !== undefined && tx.profitLoss !== 0 ? 
+                                      (tx.profitLoss > 0 ? '+' : '') + '¥' + tx.profitLoss.toFixed(2) : 
+                                      tx.type === 'buy' ? '-' : '¥0.00'}
+                                  </TableCell>
+                                  <TableCell className={`text-right font-semibold ${(tx.profitRate ?? 0) > 0 ? 'text-green-600 dark:text-green-400' : (tx.profitRate ?? 0) < 0 ? 'text-red-600 dark:text-red-400' : ''}`}>
+                                    {tx.profitRate !== undefined && tx.profitRate !== 0 ? 
+                                      (tx.profitRate > 0 ? '+' : '') + tx.profitRate.toFixed(2) + '%' : 
+                                      tx.type === 'buy' ? '-' : '0.00%'}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
                         </div>
                       )}
                     </TabsContent>
@@ -504,7 +645,12 @@ export default function Home() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label>交易类型</Label>
-                          <Select>
+                          <Select 
+                            value={transactionForm.type} 
+                            onValueChange={(value: 'buy' | 'sell') => 
+                              setTransactionForm(prev => ({ ...prev, type: value }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="选择类型" />
                             </SelectTrigger>
@@ -516,26 +662,102 @@ export default function Home() {
                         </div>
                         <div>
                           <Label>股票代码</Label>
-                          <Input placeholder="如：000001" />
+                          <Input 
+                            placeholder="如：000001" 
+                            value={transactionForm.stockCode}
+                            onChange={(e) => setTransactionForm(prev => ({ ...prev, stockCode: e.target.value }))}
+                          />
                         </div>
                         <div>
                           <Label>股票名称</Label>
-                          <Input placeholder="如：平安银行" />
+                          <Input 
+                            placeholder="如：平安银行" 
+                            value={transactionForm.stockName}
+                            onChange={(e) => setTransactionForm(prev => ({ ...prev, stockName: e.target.value }))}
+                          />
                         </div>
                         <div>
-                          <Label>数量</Label>
-                          <Input type="number" placeholder="100" />
+                          <Label>数量（股）</Label>
+                          <Input 
+                            type="number" 
+                            placeholder="100" 
+                            value={transactionForm.quantity}
+                            onChange={(e) => setTransactionForm(prev => ({ ...prev, quantity: e.target.value }))}
+                          />
                         </div>
                         <div>
-                          <Label>价格</Label>
-                          <Input type="number" placeholder="10.00" />
+                          <Label>{transactionForm.type === 'buy' ? '买入价格' : '卖出价格'}</Label>
+                          <Input 
+                            type="number" 
+                            placeholder="10.00" 
+                            value={transactionForm.price}
+                            onChange={(e) => setTransactionForm(prev => ({ ...prev, price: e.target.value }))}
+                          />
                         </div>
+                        {transactionForm.type === 'sell' && (
+                          <div>
+                            <Label>买入价格（用于计算盈亏）</Label>
+                            <Input 
+                              type="number" 
+                              placeholder="10.00" 
+                              value={transactionForm.buyPrice}
+                              onChange={(e) => setTransactionForm(prev => ({ ...prev, buyPrice: e.target.value }))}
+                            />
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                              输入当初的买入价以自动计算盈亏
+                            </p>
+                          </div>
+                        )}
                         <div>
                           <Label>日期</Label>
-                          <Input type="date" />
+                          <Input 
+                            type="date" 
+                            value={transactionForm.date}
+                            onChange={(e) => setTransactionForm(prev => ({ ...prev, date: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label>备注</Label>
+                          <Input 
+                            placeholder="可选备注" 
+                            value={transactionForm.note}
+                            onChange={(e) => setTransactionForm(prev => ({ ...prev, note: e.target.value }))}
+                          />
                         </div>
                       </div>
-                      <Button className="w-full">添加交易记录</Button>
+                      
+                      {/* 实时预览盈亏 */}
+                      {transactionForm.type === 'sell' && transactionForm.price && transactionForm.buyPrice && transactionForm.quantity && (
+                        <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                            盈亏预览
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-slate-600 dark:text-slate-400">预计盈亏：</span>
+                              <span className={`font-bold ml-2 ${
+                                ((parseFloat(transactionForm.price) - parseFloat(transactionForm.buyPrice)) * parseInt(transactionForm.quantity)) > 0 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : 'text-red-600 dark:text-red-400'
+                              }`}>
+                                ¥{((parseFloat(transactionForm.price) - parseFloat(transactionForm.buyPrice)) * parseInt(transactionForm.quantity)).toFixed(2)}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-slate-600 dark:text-slate-400">预计收益率：</span>
+                              <span className={`font-bold ml-2 ${
+                                ((parseFloat(transactionForm.price) - parseFloat(transactionForm.buyPrice)) / parseFloat(transactionForm.buyPrice) * 100) > 0 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : 'text-red-600 dark:text-red-400'
+                              }`}>
+                                {((parseFloat(transactionForm.price) - parseFloat(transactionForm.buyPrice)) / parseFloat(transactionForm.buyPrice) * 100).toFixed(2)}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <Button className="w-full" onClick={handleTransactionSubmit}>添加交易记录</Button>
                     </TabsContent>
                   </Tabs>
                 </CardContent>

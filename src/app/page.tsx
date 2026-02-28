@@ -66,9 +66,12 @@ export default function Home() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
             <TrendingUp className="h-8 w-8 text-blue-600" />
-            杨永兴隔夜套利法选股工具
+            GYTL-Tools
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-xl text-slate-600 dark:text-slate-400 mb-2">
+            杨永兴隔夜套利法选股工具
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-500">
             基于涨幅、量比、换手率等指标筛选适合隔夜操作的优质标的
           </p>
         </div>

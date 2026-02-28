@@ -322,7 +322,7 @@ export default function Home() {
                         <Slider
                           value={[filter.maxMarketCap]}
                           onValueChange={([value]) => updateFilter('maxMarketCap', value)}
-                          max={500}
+                          max={1000}
                           min={10}
                           step={10}
                           className="mt-2"
@@ -396,7 +396,7 @@ export default function Home() {
                         <Slider
                           value={[filter.maxPrice]}
                           onValueChange={([value]) => updateFilter('maxPrice', value)}
-                          max={200}
+                          max={3000}
                           min={10}
                           step={5}
                           className="mt-2"

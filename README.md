@@ -92,6 +92,10 @@ coze start
 
 本项目支持多种部署方式：
 
+**快速开始** 🚀
+- [部署前准备清单](./DEPLOYMENT_CHECKLIST.md) - 部署前需要准备什么？
+- [云服务器部署完整指南](./CLOUD_DEPLOYMENT_GUIDE.md) - 详细的操作指引
+
 ### Docker 部署（推荐）
 
 ```bash
@@ -105,18 +109,16 @@ docker run -d -p 3000:3000 --name gytl-tools gytl-tools:latest
 docker-compose up -d
 ```
 
-### 云服务器部署
-
-详细部署文档请查看 [DEPLOY.md](./DEPLOY.md)
-
-### Vercel 部署
+### 快速部署脚本
 
 ```bash
-# 推送到GitHub
-git push
-
-# 在Vercel中导入项目即可
+chmod +x deploy.sh
+./deploy.sh
 ```
+
+### 其他部署方式
+
+详细部署文档请查看 [DEPLOY.md](./DEPLOY.md)
 
 ## 📁 项目结构
 

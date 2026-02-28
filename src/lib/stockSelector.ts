@@ -16,6 +16,8 @@ const mockStocks: Stock[] = [
     ma5: 12.10,
     ma10: 11.80,
     ma20: 11.50,
+    aboveAveragePrice: true,
+    limitUpDays20: 2,
     score: 85,
     reasons: [],
   },
@@ -33,6 +35,8 @@ const mockStocks: Stock[] = [
     ma5: 10.95,
     ma10: 10.70,
     ma20: 10.40,
+    aboveAveragePrice: false,
+    limitUpDays20: 1,
     score: 82,
     reasons: [],
   },
@@ -50,6 +54,8 @@ const mockStocks: Stock[] = [
     ma5: 15.10,
     ma10: 14.80,
     ma20: 14.20,
+    aboveAveragePrice: true,
+    limitUpDays20: 3,
     score: 88,
     reasons: [],
   },
@@ -67,6 +73,8 @@ const mockStocks: Stock[] = [
     ma5: 140.20,
     ma10: 138.50,
     ma20: 135.00,
+    aboveAveragePrice: false,
+    limitUpDays20: 0,
     score: 75,
     reasons: [],
   },
@@ -84,6 +92,8 @@ const mockStocks: Stock[] = [
     ma5: 1660.00,
     ma10: 1650.00,
     ma20: 1630.00,
+    aboveAveragePrice: false,
+    limitUpDays20: 0,
     score: 70,
     reasons: [],
   },
@@ -101,6 +111,8 @@ const mockStocks: Stock[] = [
     ma5: 248.50,
     ma10: 240.00,
     ma20: 235.00,
+    aboveAveragePrice: true,
+    limitUpDays20: 2,
     score: 80,
     reasons: [],
   },
@@ -118,6 +130,8 @@ const mockStocks: Stock[] = [
     ma5: 31.80,
     ma10: 31.20,
     ma20: 30.50,
+    aboveAveragePrice: true,
+    limitUpDays20: 2,
     score: 84,
     reasons: [],
   },
@@ -135,6 +149,8 @@ const mockStocks: Stock[] = [
     ma5: 180.50,
     ma10: 175.00,
     ma20: 170.00,
+    aboveAveragePrice: false,
+    limitUpDays20: 1,
     score: 82,
     reasons: [],
   },
@@ -154,13 +170,13 @@ export function selectStocks(
     // 条件1: 涨幅在范围内
     if (stock.change >= filter.minChange && stock.change <= filter.maxChange) {
       reasons.push(`涨幅 ${stock.change.toFixed(2)}% 符合要求`);
-      score += 20;
+      score += 15;
     }
 
     // 条件2: 量比达标
     if (stock.volumeRatio >= filter.minVolumeRatio) {
       reasons.push(`量比 ${stock.volumeRatio.toFixed(2)} 大于 ${filter.minVolumeRatio}`);
-      score += 15;
+      score += 10;
     }
 
     // 条件3: 换手率在范围内
@@ -169,12 +185,12 @@ export function selectStocks(
       stock.turnoverRate <= filter.maxTurnoverRate
     ) {
       reasons.push(`换手率 ${stock.turnoverRate.toFixed(2)}% 在合理范围`);
-      score += 15;
+      score += 10;
     }
 
-    // 条件4: 流通市值
-    if (stock.marketCap <= filter.maxMarketCap) {
-      reasons.push(`流通市值 ${stock.marketCap}亿 小于 ${filter.maxMarketCap}亿`);
+    // 条件4: 流通市值在范围内
+    if (stock.marketCap >= filter.minMarketCap && stock.marketCap <= filter.maxMarketCap) {
+      reasons.push(`流通市值 ${stock.marketCap}亿在${filter.minMarketCap}-${filter.maxMarketCap}亿范围`);
       score += 10;
     }
 
@@ -184,18 +200,46 @@ export function selectStocks(
       score += 10;
     }
 
-    // 条件6: 技术形态 - 价格在均线上方
+    // 条件6: 分时走势全天在均价线上方（可选条件）
+    if (filter.requireAboveAveragePrice) {
+      if (stock.aboveAveragePrice) {
+        reasons.push('分时走势全天在均价线上方，走势强势');
+        score += 15;
+      }
+    } else {
+      // 如果不是强制条件，满足则加分
+      if (stock.aboveAveragePrice) {
+        reasons.push('分时走势全天在均价线上方');
+        score += 8;
+      }
+    }
+
+    // 条件7: 20天内涨停天数（可选条件）
+    if (filter.minLimitUpDays20 > 0) {
+      if (stock.limitUpDays20 >= filter.minLimitUpDays20) {
+        reasons.push(`20天内涨停${stock.limitUpDays20}天，市场关注度高`);
+        score += 15;
+      }
+    } else {
+      // 如果不是强制条件，有涨停则加分
+      if (stock.limitUpDays20 > 0) {
+        reasons.push(`20天内涨停${stock.limitUpDays20}天`);
+        score += 5;
+      }
+    }
+
+    // 条件8: 技术形态 - 价格在均线上方
     const isAboveMA = stock.price > stock.ma5 && stock.ma5 > stock.ma10 && stock.ma10 > stock.ma20;
     if (isAboveMA) {
       reasons.push('处于上升趋势，均线多头排列');
-      score += 15;
+      score += 10;
     }
 
-    // 条件7: 距离52周高点的安全距离
+    // 条件9: 距离52周高点的安全距离
     const distanceFromHigh = ((stock.high52Week - stock.price) / stock.high52Week) * 100;
     if (distanceFromHigh > 10 && distanceFromHigh < 30) {
       reasons.push(`距离52周高点 ${distanceFromHigh.toFixed(2)}%，有上升空间`);
-      score += 15;
+      score += 7;
     }
 
     // 综合评分筛选（分数 >= 70 才入选）

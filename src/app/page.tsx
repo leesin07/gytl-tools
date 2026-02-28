@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Stock, FilterConfig, DEFAULT_FILTER } from '@/types/stock';
@@ -296,21 +297,76 @@ export default function Home() {
 
                   <Separator />
 
-                  {/* 流通市值 */}
+                  {/* 流通市值范围 */}
                   <div>
                     <div className="flex justify-between mb-2">
-                      <Label>最大流通市值（亿）</Label>
+                      <Label>流通市值范围（亿）</Label>
                       <span className="text-sm text-slate-600 dark:text-slate-400">
-                        {filter.maxMarketCap}亿
+                        {filter.minMarketCap}亿 - {filter.maxMarketCap}亿
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-xs text-slate-500 dark:text-slate-400">最小流通市值</Label>
+                        <Slider
+                          value={[filter.minMarketCap]}
+                          onValueChange={([value]) => updateFilter('minMarketCap', value)}
+                          max={200}
+                          min={0}
+                          step={5}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-slate-500 dark:text-slate-400">最大流通市值</Label>
+                        <Slider
+                          value={[filter.maxMarketCap]}
+                          onValueChange={([value]) => updateFilter('maxMarketCap', value)}
+                          max={500}
+                          min={10}
+                          step={10}
+                          className="mt-2"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* 分时走势在均价线上方 */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>分时走势全天在均价线上方</Label>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        开启后仅筛选全天在均价线上方的股票
+                      </p>
+                    </div>
+                    <Switch
+                      checked={filter.requireAboveAveragePrice}
+                      onCheckedChange={(checked) => updateFilter('requireAboveAveragePrice', checked ? 1 : 0)}
+                    />
+                  </div>
+
+                  <Separator />
+
+                  {/* 20天内涨停天数 */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <Label>20天内最少涨停天数</Label>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">
+                        {filter.minLimitUpDays20} 天
                       </span>
                     </div>
                     <Slider
-                      value={[filter.maxMarketCap]}
-                      onValueChange={([value]) => updateFilter('maxMarketCap', value)}
-                      max={500}
-                      min={20}
-                      step={10}
+                      value={[filter.minLimitUpDays20]}
+                      onValueChange={([value]) => updateFilter('minLimitUpDays20', value)}
+                      max={10}
+                      min={0}
+                      step={1}
                     />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                      设置为 0 表示不限制涨停天数
+                    </p>
                   </div>
 
                   <Separator />

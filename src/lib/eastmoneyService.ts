@@ -124,6 +124,7 @@ export async function getStocksByChange(
     return {
       stocks: filteredStocks,
       count: filteredStocks.length,
+      mock: data.mock || false, // 传递mock标记
     };
   } catch (error) {
     console.error('获取涨幅股票列表失败:', error);

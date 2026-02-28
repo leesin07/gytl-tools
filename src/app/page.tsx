@@ -62,6 +62,8 @@ export default function Home() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [usingMockData, setUsingMockData] = useState(false);
+  const [dataSourceMessage, setDataSourceMessage] = useState('');
 
   // 计算资金看板数据
   useEffect(() => {
@@ -250,9 +252,18 @@ export default function Home() {
   // 全A股筛选
   const handleScreenAllStocks = async () => {
     setIsLoadingAllStocks(true);
+    setDataSourceMessage('');
+    setUsingMockData(false);
+    
     try {
       // 获取所有涨幅符合条件的股票
       const result = await getStocksByChange(filter.minChange, filter.maxChange);
+      
+      // 检查是否使用了模拟数据
+      if (result.mock) {
+        setUsingMockData(true);
+        setDataSourceMessage('当前使用模拟数据，无法连接到真实行情API');
+      }
       
       // 转换为Stock对象
       const stocksWithQuotes = result.stocks.map((quote: any) => createStockFromQuote(quote));
@@ -279,9 +290,14 @@ export default function Home() {
       // 更新状态
       setAllStocksWithTime(prev => [...filteredWithTime, ...prev]);
       
-      alert(`成功从全A股中筛选出${filteredStocks.length}只符合条件的股票`);
+      if (result.mock) {
+        alert(`使用模拟数据筛选出${filteredStocks.length}只符合条件的股票\n（注意：当前无法连接到真实行情API）`);
+      } else {
+        alert(`成功从全A股中筛选出${filteredStocks.length}只符合条件的股票`);
+      }
     } catch (error) {
       console.error('全A股筛选失败:', error);
+      setDataSourceMessage('筛选失败：' + (error instanceof Error ? error.message : '未知错误'));
       alert('全A股筛选失败，请稍后重试');
     } finally {
       setIsLoadingAllStocks(false);
@@ -453,6 +469,21 @@ export default function Home() {
                   全A股筛选
                 </Button>
               </div>
+              
+              {/* 数据源提示 */}
+              {usingMockData && (
+                <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="font-medium text-amber-800 dark:text-amber-200">当前使用模拟数据</p>
+                      <p className="text-amber-700 dark:text-amber-300 mt-1">
+                        {dataSourceMessage || '无法连接到真实行情API，正在使用模拟数据进行演示'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {allStocksWithTime.length === 0 ? (

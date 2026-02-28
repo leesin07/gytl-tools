@@ -385,23 +385,22 @@ export function createStockFromQuote(quote: any): Stock {
   // 简化的计算逻辑，实际应用中需要更多历史数据
   
   // 计算涨跌幅
-  const change = quote.priceChangePercent || 0;
+  const change = quote.change || 0;
   
-  // 计算流通市值（简化：需要实际流通股本数据）
-  // 这里使用成交额作为参考估算
-  const marketCap = (quote.amount || 0) / 100000000 / (quote.volumeRatio || 1) * 10;
+  // 计算流通市值（使用API返回的市值）
+  const marketCap = quote.marketCap || 0;
   
   // 模拟生成其他指标（实际需要更多数据）
   return {
-    code: quote.code || quote.name,
-    name: quote.name,
+    code: quote.code || '',
+    name: quote.name || '',
     price: quote.price || 0,
     change: change,
     priceChange: quote.priceChange || 0,
     volume: quote.volume || 0,
-    turnover: quote.amount || 0,
-    turnoverRate: Math.random() * 10 + 3, // 3-13% 之间随机
-    volumeRatio: Math.random() * 3 + 1, // 1-4 之间随机
+    turnover: quote.turnover || 0,
+    turnoverRate: quote.turnoverRate || 0,
+    volumeRatio: quote.volumeRatio || 0,
     marketCap: marketCap,
     high52Week: quote.price * 1.3, // 简化估算
     low52Week: quote.price * 0.7, // 简化估算
@@ -415,13 +414,13 @@ export function createStockFromQuote(quote: any): Stock {
     filterTimestamp: '',
     
     // 实时行情扩展字段
-    openPrice: quote.open || 0,
-    closePrice: quote.preClose || 0,
-    highPrice: quote.high || 0,
-    lowPrice: quote.low || 0,
-    buy1: quote.b1_p || 0,
-    sell1: quote.a1_p || 0,
-    updateTime: `${quote.date} ${quote.time}` || new Date().toLocaleString('zh-CN'),
+    openPrice: quote.openPrice || 0,
+    closePrice: quote.closePrice || 0,
+    highPrice: quote.highPrice || 0,
+    lowPrice: quote.lowPrice || 0,
+    buy1: quote.buy1 || 0,
+    sell1: quote.sell1 || 0,
+    updateTime: quote.updateTime || new Date().toLocaleString('zh-CN'),
   };
 }
 

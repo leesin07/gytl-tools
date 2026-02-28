@@ -14,18 +14,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Stock, FilterConfig, DEFAULT_FILTER } from '@/types/stock';
 import { FundRecord, Transaction, DEFAULT_FUND_RECORDS, DEFAULT_TRANSACTIONS } from '@/types/fund';
-import { getMockStocks, selectStocks, createStockFromQuote, getHotStockCodes } from '@/lib/stockSelector';
+import { getMockStocks, selectStocks, createStockFromQuote } from '@/lib/stockSelector';
 import { calculateFundDashboard } from '@/lib/fundCalculator';
-import { getStockQuotes } from '@/lib/stockQuote';
 import { getStockList, getStocksByChange, searchStocks } from '@/lib/eastmoneyService';
-import { TrendingUp, Filter, RefreshCw, AlertCircle, CheckCircle, Save, ChevronDown, ChevronUp, DollarSign, List, Upload, Plus, Play, Search, Database } from 'lucide-react';
+import { TrendingUp, Filter, AlertCircle, CheckCircle, Save, ChevronDown, ChevronUp, DollarSign, List, Upload, Plus, Search, Database } from 'lucide-react';
 
 export default function Home() {
-  const [stocks, setStocks] = useState<Stock[]>([]);
   const [allStocksWithTime, setAllStocksWithTime] = useState<Stock[]>([]);
   const [filter, setFilter] = useState<FilterConfig>(DEFAULT_FILTER);
   const [tempFilter, setTempFilter] = useState<FilterConfig>(DEFAULT_FILTER);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<string>('');
   const [expandedStock, setExpandedStock] = useState<string | null>(null);
 
@@ -55,9 +52,7 @@ export default function Home() {
     note: ''
   });
 
-  // 实时行情状态
-  const [realtimeStocks, setRealtimeStocks] = useState<Stock[]>([]);
-  const [isLoadingRealtime, setIsLoadingRealtime] = useState(false);
+  // 股票筛选状态
   const [isLoadingAllStocks, setIsLoadingAllStocks] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -70,36 +65,6 @@ export default function Home() {
     const data = calculateFundDashboard(fundRecords, transactions);
     setDashboardData(data);
   }, [fundRecords, transactions]);
-
-  // 加载和筛选股票
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      const allStocks = getMockStocks();
-      setStocks(allStocks);
-      const filtered = selectStocks(allStocks, filter);
-      
-      // 添加筛选时间
-      const now = new Date();
-      const timestamp = now.toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-      
-      const filteredWithTime = filtered.map(stock => ({
-        ...stock,
-        filterTimestamp: timestamp
-      }));
-      
-      // 添加到列表最前面
-      setAllStocksWithTime(prev => [...filteredWithTime, ...prev]);
-      setIsRefreshing(false);
-    }, 1000);
-  };
 
   const updateTempFilter = (key: keyof FilterConfig, value: number) => {
     setTempFilter((prev) => ({ ...prev, [key]: value }));
@@ -202,52 +167,6 @@ export default function Home() {
     alert('交易记录已添加');
   };
 
-  // 获取实时行情
-  const handleGetRealtimeQuotes = async () => {
-    setIsLoadingRealtime(true);
-    try {
-      // 获取热门股票的实时行情
-      const codes = getHotStockCodes().join(',');
-      const quotes = await getStockQuotes(codes);
-      
-      // 转换为Stock对象
-      const stocksWithQuotes = quotes.map(quote => createStockFromQuote(quote));
-      
-      // 应用筛选条件
-      const filteredStocks = selectStocks(stocksWithQuotes, filter);
-      
-      // 添加筛选时间
-      const now = new Date();
-      const timestamp = now.toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-      
-      const filteredWithTime = filteredStocks.map(stock => ({
-        ...stock,
-        filterTimestamp: timestamp
-      }));
-      
-      // 更新状态
-      setRealtimeStocks(filteredWithTime);
-      
-      // 如果有筛选结果，也添加到主列表
-      if (filteredWithTime.length > 0) {
-        setAllStocksWithTime(prev => [...filteredWithTime, ...prev]);
-      }
-      
-      alert(`成功获取实时行情，共${quotes.length}只股票，筛选出${filteredStocks.length}只符合条件`);
-    } catch (error) {
-      console.error('获取实时行情失败:', error);
-      alert('获取实时行情失败，请稍后重试');
-    } finally {
-      setIsLoadingRealtime(false);
-    }
-  };
 
   // 全A股筛选
   const handleScreenAllStocks = async () => {
@@ -442,28 +361,11 @@ export default function Home() {
               </div>
               <div className="flex gap-2">
                 <Button
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
-                  variant="outline"
-                  size="sm"
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  刷新数据
-                </Button>
-                <Button
-                  onClick={handleGetRealtimeQuotes}
-                  disabled={isLoadingRealtime}
-                  variant="default"
-                  size="sm"
-                >
-                  <Play className={`h-4 w-4 mr-2 ${isLoadingRealtime ? 'animate-spin' : ''}`} />
-                  热门股票
-                </Button>
-                <Button
                   onClick={handleScreenAllStocks}
                   disabled={isLoadingAllStocks}
-                  variant="secondary"
+                  variant="default"
                   size="sm"
+                  className="bg-blue-600 hover:bg-blue-700"
                 >
                   <Database className={`h-4 w-4 mr-2 ${isLoadingAllStocks ? 'animate-spin' : ''}`} />
                   全A股筛选
@@ -494,7 +396,7 @@ export default function Home() {
                     暂无筛选结果
                   </p>
                   <p className="text-slate-500 dark:text-slate-500 text-sm">
-                    点击"刷新数据"按钮开始筛选
+                    点击"全A股筛选"按钮开始筛选
                   </p>
                 </CardContent>
               </Card>

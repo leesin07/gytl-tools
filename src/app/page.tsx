@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,9 +10,10 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Stock, FilterConfig, DEFAULT_FILTER } from '@/types/stock';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Stock, FilterConfig, FilterHistory, DEFAULT_FILTER } from '@/types/stock';
 import { getMockStocks, selectStocks } from '@/lib/stockSelector';
-import { TrendingUp, TrendingDown, Filter, RefreshCw, AlertCircle, CheckCircle, Save } from 'lucide-react';
+import { TrendingUp, TrendingDown, Filter, RefreshCw, AlertCircle, CheckCircle, Save, History, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function Home() {
   const [stocks, setStocks] = useState<Stock[]>([]);
@@ -21,6 +22,9 @@ export default function Home() {
   const [tempFilter, setTempFilter] = useState<FilterConfig>(DEFAULT_FILTER);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<string>('');
+  const [filterHistory, setFilterHistory] = useState<FilterHistory[]>([]);
+  const [currentHistoryIndex, setCurrentHistoryIndex] = useState<number | null>(null);
+  const [expandedStock, setExpandedStock] = useState<string | null>(null);
 
   // 加载和筛选股票
   useEffect(() => {
@@ -38,6 +42,7 @@ export default function Home() {
     setIsRefreshing(true);
     setTimeout(() => {
       loadStocks();
+      saveHistory();
       setIsRefreshing(false);
     }, 1000);
   };
@@ -49,14 +54,46 @@ export default function Home() {
   const handleSaveConfirm = () => {
     setFilter(tempFilter);
     const now = new Date();
-    setLastSavedTime(now.toLocaleString('zh-CN', {
+    const timeStr = now.toLocaleString('zh-CN', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit'
-    }));
+    });
+    setLastSavedTime(timeStr);
+  };
+
+  const saveHistory = () => {
+    const historyItem: FilterHistory = {
+      id: Date.now().toString(),
+      timestamp: new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }),
+      filter: { ...filter },
+      stocks: [...selectedStocks],
+      count: selectedStocks.length
+    };
+    setFilterHistory((prev) => [historyItem, ...prev]);
+    setCurrentHistoryIndex(0);
+  };
+
+  const handleViewHistory = (index: number) => {
+    const historyItem = filterHistory[index];
+    setSelectedStocks(historyItem.stocks);
+    setFilter(historyItem.filter);
+    setTempFilter(historyItem.filter);
+    setCurrentHistoryIndex(index);
+  };
+
+  const toggleStockExpand = (stockCode: string) => {
+    setExpandedStock(expandedStock === stockCode ? null : stockCode);
   };
 
   return (
@@ -74,9 +111,12 @@ export default function Home() {
         </div>
 
         <Tabs defaultValue="results" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
             <TabsTrigger value="results">
               选股结果 ({selectedStocks.length})
+            </TabsTrigger>
+            <TabsTrigger value="history">
+              筛选历史 ({filterHistory.length})
             </TabsTrigger>
             <TabsTrigger value="settings">
               筛选条件
@@ -88,6 +128,11 @@ export default function Home() {
             <div className="flex justify-between items-center">
               <div className="text-sm text-slate-600 dark:text-slate-400">
                 共筛选出 <span className="font-bold text-blue-600">{selectedStocks.length}</span> 只股票
+                {currentHistoryIndex !== null && (
+                  <span className="ml-3 text-xs text-slate-500">
+                    （查看历史记录 #{filterHistory.length - currentHistoryIndex}）
+                  </span>
+                )}
               </div>
               <Button
                 onClick={handleRefresh}
@@ -113,92 +158,211 @@ export default function Home() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {selectedStocks.map((stock) => (
-                  <Card key={stock.code} className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-600">
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-slate-50 dark:bg-slate-800">
+                        <TableHead className="w-[120px]">股票代码</TableHead>
+                        <TableHead className="w-[150px]">股票名称</TableHead>
+                        <TableHead className="text-right">当前价格</TableHead>
+                        <TableHead className="text-right">涨跌幅</TableHead>
+                        <TableHead className="text-right">量比</TableHead>
+                        <TableHead className="text-right">换手率</TableHead>
+                        <TableHead className="text-right">流通市值</TableHead>
+                        <TableHead className="text-right">评分</TableHead>
+                        <TableHead className="w-[100px]">详情</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedStocks.map((stock) => (
+                        <React.Fragment key={stock.code}>
+                          <TableRow key={`${stock.code}-main`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                            <TableCell className="font-mono text-sm">{stock.code}</TableCell>
+                            <TableCell className="font-medium">{stock.name}</TableCell>
+                            <TableCell className="text-right font-bold">¥{stock.price.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">
+                              <Badge
+                                variant={stock.change > 0 ? 'default' : 'secondary'}
+                                className={
+                                  stock.change > 0
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+                                }
+                              >
+                                {stock.change > 0 ? '+' : ''}
+                                {stock.change.toFixed(2)}%
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">{stock.volumeRatio.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">{stock.turnoverRate.toFixed(2)}%</TableCell>
+                            <TableCell className="text-right">{stock.marketCap}亿</TableCell>
+                            <TableCell className="text-right">
+                              <Badge variant="outline" className="text-blue-600 border-blue-600">
+                                {stock.score}分
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleStockExpand(stock.code)}
+                              >
+                                {expandedStock === stock.code ? (
+                                  <ChevronUp className="h-4 w-4" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                          {expandedStock === stock.code && (
+                            <TableRow key={`${stock.code}-expanded`}>
+                              <TableCell colSpan={9} className="p-4 bg-slate-50/50 dark:bg-slate-800/50">
+                                <div className="space-y-4">
+                                  {/* 技术指标 */}
+                                  <div>
+                                    <h4 className="text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
+                                      技术指标
+                                    </h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                      <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                                        <div className="text-slate-500 dark:text-slate-400 text-xs mb-1">MA5</div>
+                                        <div className="font-semibold">¥{stock.ma5.toFixed(2)}</div>
+                                      </div>
+                                      <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                                        <div className="text-slate-500 dark:text-slate-400 text-xs mb-1">MA10</div>
+                                        <div className="font-semibold">¥{stock.ma10.toFixed(2)}</div>
+                                      </div>
+                                      <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                                        <div className="text-slate-500 dark:text-slate-400 text-xs mb-1">MA20</div>
+                                        <div className="font-semibold">¥{stock.ma20.toFixed(2)}</div>
+                                      </div>
+                                      <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                                        <div className="text-slate-500 dark:text-slate-400 text-xs mb-1">52周区间</div>
+                                        <div className="font-semibold text-xs">
+                                          ¥{stock.low52Week.toFixed(2)} - ¥{stock.high52Week.toFixed(2)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* 额外信息 */}
+                                  <div>
+                                    <h4 className="text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">
+                                      其他信息
+                                    </h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-slate-500">分时走势：</span>
+                                        <Badge variant={stock.aboveAveragePrice ? "default" : "secondary"}>
+                                          {stock.aboveAveragePrice ? '均价线上方' : '均价线下方'}
+                                        </Badge>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-slate-500">20天涨停：</span>
+                                        <Badge variant={stock.limitUpDays20 > 0 ? "default" : "secondary"}>
+                                          {stock.limitUpDays20} 天
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* 符合条件的原因 */}
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <CheckCircle className="h-4 w-4 text-green-600" />
+                                      <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                        符合条件
+                                      </h4>
+                                    </div>
+                                    <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg">
+                                      <ul className="space-y-1 text-sm text-green-900 dark:text-green-100">
+                                        {stock.reasons.map((reason, index) => (
+                                          <li key={index} className="flex items-start gap-2">
+                                            <span className="text-green-600 dark:text-green-400 mt-0.5">✓</span>
+                                            {reason}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* 筛选历史页面 */}
+          <TabsContent value="history" className="space-y-6">
+            <div className="text-sm text-slate-600 dark:text-slate-400">
+              共有 <span className="font-bold text-blue-600">{filterHistory.length}</span> 次筛选记录
+            </div>
+
+            {filterHistory.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-16">
+                  <History className="h-16 w-16 text-slate-400 mb-4" />
+                  <p className="text-slate-600 dark:text-slate-400 text-lg mb-2">
+                    暂无筛选历史
+                  </p>
+                  <p className="text-slate-500 dark:text-slate-500 text-sm">
+                    刷新数据后自动记录筛选历史
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {filterHistory.map((history, index) => (
+                  <Card
+                    key={history.id}
+                    className={`cursor-pointer transition-all ${
+                      currentHistoryIndex === index
+                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-950'
+                        : 'hover:border-blue-300'
+                    }`}
+                    onClick={() => handleViewHistory(index)}
+                  >
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle className="text-xl">{stock.name}</CardTitle>
-                          <CardDescription className="text-base font-mono">
-                            {stock.code}
+                          <CardTitle className="text-lg">
+                            筛选记录 #{filterHistory.length - index}
+                          </CardTitle>
+                          <CardDescription className="text-sm">
+                            筛选时间：{history.timestamp}
                           </CardDescription>
                         </div>
-                        <Badge
-                          variant={stock.change > 0 ? 'default' : 'secondary'}
-                          className={`text-base px-3 py-1 ${
-                            stock.change > 0
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-                          }`}
-                        >
-                          {stock.change > 0 ? '+' : ''}
-                          {stock.change.toFixed(2)}%
+                        <Badge variant="outline" className="text-blue-600 border-blue-600">
+                          {history.count} 只股票
                         </Badge>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                      {/* 价格信息 */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-600 dark:text-slate-400">当前价格</span>
-                        <span className="text-2xl font-bold text-slate-900 dark:text-white">
-                          ¥{stock.price.toFixed(2)}
-                        </span>
-                      </div>
-
-                      {/* 关键指标 */}
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="bg-slate-50 dark:bg-slate-800 p-2 rounded">
-                          <div className="text-slate-500 dark:text-slate-400 text-xs">量比</div>
-                          <div className="font-semibold text-slate-900 dark:text-white">
-                            {stock.volumeRatio.toFixed(2)}
-                          </div>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-600 dark:text-slate-400">
+                        <div>
+                          <span className="font-medium">涨幅范围：</span>
+                          {history.filter.minChange}% - {history.filter.maxChange}%
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-800 p-2 rounded">
-                          <div className="text-slate-500 dark:text-slate-400 text-xs">换手率</div>
-                          <div className="font-semibold text-slate-900 dark:text-white">
-                            {stock.turnoverRate.toFixed(2)}%
-                          </div>
+                        <div>
+                          <span className="font-medium">量比：</span>
+                          ≥{history.filter.minVolumeRatio}
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-800 p-2 rounded">
-                          <div className="text-slate-500 dark:text-slate-400 text-xs">流通市值</div>
-                          <div className="font-semibold text-slate-900 dark:text-white">
-                            {stock.marketCap}亿
-                          </div>
+                        <div>
+                          <span className="font-medium">换手率：</span>
+                          {history.filter.minTurnoverRate}% - {history.filter.maxTurnoverRate}%
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-800 p-2 rounded">
-                          <div className="text-slate-500 dark:text-slate-400 text-xs">综合评分</div>
-                          <div className="font-semibold text-blue-600">
-                            {stock.score}分
-                          </div>
+                        <div>
+                          <span className="font-medium">市值：</span>
+                          {history.filter.minMarketCap} - {history.filter.maxMarketCap}亿
                         </div>
-                      </div>
-
-                      {/* 符合条件的原因 */}
-                      <Separator />
-                      <div>
-                        <div className="flex items-center gap-1 mb-2">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            符合条件
-                          </span>
-                        </div>
-                        <ul className="space-y-1">
-                          {stock.reasons.slice(0, 3).map((reason, index) => (
-                            <li
-                              key={index}
-                              className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-1"
-                            >
-                              <span className="text-green-500">•</span>
-                              {reason}
-                            </li>
-                          ))}
-                          {stock.reasons.length > 3 && (
-                            <li className="text-xs text-slate-500 dark:text-slate-500">
-                              +{stock.reasons.length - 3} 条更多...
-                            </li>
-                          )}
-                        </ul>
                       </div>
                     </CardContent>
                   </Card>

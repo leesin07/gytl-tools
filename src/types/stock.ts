@@ -48,3 +48,12 @@ export const DEFAULT_FILTER: FilterConfig = {
   requireAboveAveragePrice: false, // 不强制要求分时走势全天在均价线上方
   minLimitUpDays20: 0, // 最少20天内涨停天数（不限）
 };
+
+// 筛选历史记录
+export interface FilterHistory {
+  id: string; // 唯一标识
+  timestamp: string; // 筛选时间
+  filter: FilterConfig; // 使用的筛选条件
+  stocks: Stock[]; // 筛选结果
+  count: number; // 筛选出的股票数量
+}

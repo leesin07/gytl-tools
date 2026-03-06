@@ -41,6 +41,7 @@
 
 - 🚀 [逐步部署操作指引](./STEP_BY_STEP_DEPLOYMENT.md) - 从下载部署包到完成部署的每一步详解
 - 📋 [快速参考卡片](./QUICK_REFERENCE.md) - 关键命令快速参考
+- 🍎 [Mac本地+GitHub+Vercel部署](./MAC_VERCEL_DEPLOYMENT.md) - **针对Mac用户的完整部署流程**
 
 </div>
 

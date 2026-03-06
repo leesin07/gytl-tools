@@ -19,7 +19,7 @@
 
 ```bash
 cd /tmp
-wget https://github.com/your-username/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz
+wget https://github.com/leesin07/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz
 ```
 
 ### 2️⃣ 解压并移动

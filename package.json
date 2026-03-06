@@ -5,7 +5,7 @@
   "description": "基于杨永兴隔夜套利法的智能选股工具",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/gytl-tools"
+    "url": "https://github.com/leesin07/gytl-tools"
   },
   "scripts": {
     "build": "bash ./scripts/build.sh",

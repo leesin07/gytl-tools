@@ -39,7 +39,7 @@
 cd /tmp
 
 # 2. 下载最新版本的部署包
-wget https://github.com/your-username/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz
+wget https://github.com/leesin07/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz
 
 # 预期输出：
 # --2024-03-06 14:30:00--  https://github.com/...
@@ -63,14 +63,14 @@ scp /path/to/gytl-tools-v1.1.0.tar.gz user@your-server-ip:/tmp/
 
 ```bash
 cd /tmp
-curl -L -o gytl-tools-v1.1.0.tar.gz https://github.com/your-username/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz
+curl -L -o gytl-tools-v1.1.0.tar.gz https://github.com/leesin07/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz
 ```
 
 ### 验证下载完整性
 
 ```bash
 # 1. 下载哈希文件
-wget https://github.com/your-username/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz.sha256
+wget https://github.com/leesin07/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz.sha256
 
 # 2. 验证哈希
 sha256sum -c gytl-tools-v1.1.0.tar.gz.sha256

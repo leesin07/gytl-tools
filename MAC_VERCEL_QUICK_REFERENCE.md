@@ -27,7 +27,7 @@ npm install -g pnpm
 cd ~/Desktop/gytl-tools
 
 # 2. Clone 代码（替换为你的仓库地址）
-git clone https://github.com/your-username/gytl-tools.git .
+git clone https://github.com/leesin07/gytl-tools.git .
 
 # 3. 验证
 ls -la
@@ -37,7 +37,7 @@ ls -la
 
 ```bash
 # 1. 下载
-curl -L -o gytl-tools.tar.gz https://github.com/your-username/gytl-tools/archive/refs/tags/v1.1.0.tar.gz
+curl -L -o gytl-tools.tar.gz https://github.com/leesin07/gytl-tools/archive/refs/tags/v1.1.0.tar.gz
 
 # 2. 解压
 tar -xzf gytl-tools.tar.gz
@@ -49,7 +49,7 @@ rm -rf gytl-tools-1.1.0
 
 # 4. 初始化 Git
 git init
-git remote add origin https://github.com/your-username/gytl-tools.git
+git remote add origin https://github.com/leesin07/gytl-tools.git
 ```
 
 ---
@@ -88,7 +88,7 @@ git commit -m "Deploy v1.1.0"
 git push origin main
 
 # 如果需要认证：
-# Username: your-username
+# Username: leesin07
 # Password: your-personal-access-token（不是密码！）
 ```
 
@@ -178,7 +178,7 @@ vercel rollback <deployment-url>
 
 ```bash
 # ========== 从零开始 ==========
-git clone https://github.com/your-username/gytl-tools.git .
+git clone https://github.com/leesin07/gytl-tools.git .
 pnpm install
 pnpm build
 pnpm dev

@@ -300,7 +300,7 @@ Closes #123"
 #    生成并复制 token
 
 # 2. 使用 token 推送（推荐使用 credential helper）
-git remote set-url origin https://<your-token>@github.com/your-username/your-repo.git
+git remote set-url origin https://<your-token>@github.com/leesin07/gytl-tools.git
 
 # 3. 推送
 git push origin feature/your-feature-name
@@ -332,7 +332,7 @@ cat ~/.ssh/id_rsa.pub
 ssh -T git@github.com
 
 # 7. 设置远程仓库为 SSH
-git remote set-url origin git@github.com:your-username/your-repo.git
+git remote set-url origin git@github.com:leesin07/gytl-tools.git
 
 # 8. 推送
 git push origin feature/your-feature-name
@@ -350,7 +350,7 @@ git config --global http."https://github.com".version HTTP/1.1
 git config --global http.postBuffer 524288000
 
 # 方法3：使用 SSH（推荐）
-git remote set-url origin git@github.com:your-username/your-repo.git
+git remote set-url origin git@github.com:leesin07/gytl-tools.git
 ```
 
 ### 5. 创建 Pull Request
@@ -360,7 +360,7 @@ git remote set-url origin git@github.com:your-username/your-repo.git
 gh pr create --title "添加数据来源标识功能" --body "详细说明..."
 
 # 或者在 GitHub 网页上创建
-# 访问：https://github.com/your-username/your-repo/pulls
+# 访问：https://github.com/leesin07/gytl-tools/pulls
 # 点击 "New pull request"
 ```
 

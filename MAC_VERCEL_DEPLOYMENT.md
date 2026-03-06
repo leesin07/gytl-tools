@@ -96,7 +96,7 @@ cd ~/Documents/gytl-tools
 
 ```bash
 # 替换为你的 GitHub 仓库地址
-git clone https://github.com/your-username/gytl-tools.git .
+git clone https://github.com/leesin07/gytl-tools.git .
 
 # 注意：最后的 "." 表示克隆到当前目录
 
@@ -159,7 +159,7 @@ head -20 README.md
 打开浏览器，访问 GitHub Releases 页面：
 
 ```
-https://github.com/your-username/gytl-tools/releases
+https://github.com/leesin07/gytl-tools/releases
 ```
 
 找到最新版本 `v1.1.0`，下载 `gytl-tools-v1.1.0.tar.gz` 文件。
@@ -173,7 +173,7 @@ mkdir gytl-tools
 cd gytl-tools
 
 # 下载部署包
-curl -L -o gytl-tools-v1.1.0.tar.gz https://github.com/your-username/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz
+curl -L -o gytl-tools-v1.1.0.tar.gz https://github.com/leesin07/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz
 
 # 预期输出：
 #   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -186,7 +186,7 @@ curl -L -o gytl-tools-v1.1.0.tar.gz https://github.com/your-username/gytl-tools/
 
 ```bash
 # 下载哈希文件
-curl -L -o gytl-tools-v1.1.0.tar.gz.sha256 https://github.com/your-username/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz.sha256
+curl -L -o gytl-tools-v1.1.0.tar.gz.sha256 https://github.com/leesin07/gytl-tools/releases/download/v1.1.0/gytl-tools-v1.1.0.tar.gz.sha256
 
 # 验证哈希
 shasum -c gytl-tools-v1.1.0.tar.gz.sha256
@@ -234,7 +234,7 @@ ls -la
 git init
 
 # 添加远程仓库（替换为你的仓库地址）
-git remote add origin https://github.com/your-username/gytl-tools.git
+git remote add origin https://github.com/leesin07/gytl-tools.git
 
 # 预期输出：
 # Initialized empty Git repository in /Users/yourname/Desktop/gytl-tools/.git/
@@ -380,7 +380,7 @@ git push origin main
 # Compressing objects: 100% (30/30), done.
 # Writing objects: 100% (30/30), 45.2 KiB | 2.5 MiB/s, done.
 # Total 30 (delta 15), reused 0 (delta 0), pack-reused 0
-# To https://github.com/your-username/gytl-tools.git
+# To https://github.com/leesin07/gytl-tools.git
 #    def5678..abc1234  main -> main
 ```
 
@@ -388,7 +388,7 @@ git push origin main
 
 ```bash
 # Git 会提示输入用户名和密码
-Username: your-username
+Username: leesin07
 Password: your-personal-access-token  # ⚠️ 使用 Personal Access Token，不是 GitHub 密码
 ```
 
@@ -438,7 +438,7 @@ cat ~/.ssh/id_ed25519.pub
 
 ```bash
 # 更改远程仓库地址为 SSH
-git remote set-url origin git@github.com:your-username/gytl-tools.git
+git remote set-url origin git@github.com:leesin07/gytl-tools.git
 
 # 推送（这次不需要输入密码）
 git push origin main
@@ -462,7 +462,7 @@ gh auth login
 
 ```bash
 # 在浏览器中访问你的 GitHub 仓库
-# https://github.com/your-username/gytl-tools
+# https://github.com/leesin07/gytl-tools
 
 # 或者使用 GitHub CLI
 gh repo view --web
@@ -549,9 +549,9 @@ vercel login
 #   Your Username
 
 # 预期输出：
-# 🔗  Linked to your-username/gytl-tools
+# 🔗  Linked to leesin07/gytl-tools
 # 🐼  Detected Next.js
-# 🔎  Inspect: https://vercel.com/your-username/gytl-tools
+# 🔎  Inspect: https://vercel.com/leesin07/gytl-tools
 # ✅  Preview: https://gytl-tools-abc123.vercel.app
 ```
 
@@ -812,7 +812,7 @@ https://gytl-tools-abc123.vercel.app
 ```bash
 # 1. Clone 代码
 cd ~/Desktop/gytl-tools
-git clone https://github.com/your-username/gytl-tools.git .
+git clone https://github.com/leesin07/gytl-tools.git .
 
 # 2. 本地测试
 pnpm install

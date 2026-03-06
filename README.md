@@ -37,6 +37,11 @@
 - 📋 [部署前检查清单](./DEPLOYMENT_CHECKLIST.md) - 部署前必查项
 - 🔧 [工具脚本使用指南](./SCRIPTS_GUIDE.md) - 自动化脚本使用方法
 
+### 从零开始部署
+
+- 🚀 [逐步部署操作指引](./STEP_BY_STEP_DEPLOYMENT.md) - 从下载部署包到完成部署的每一步详解
+- 📋 [快速参考卡片](./QUICK_REFERENCE.md) - 关键命令快速参考
+
 </div>
 
 ## 📖 简介

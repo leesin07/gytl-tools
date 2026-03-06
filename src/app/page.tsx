@@ -68,6 +68,21 @@ export default function Home() {
   const [usingMockData, setUsingMockData] = useState(false);
   const [dataSourceMessage, setDataSourceMessage] = useState('');
 
+  // 数据来源元数据状态
+  const [dataSourceMetadata, setDataSourceMetadata] = useState<{
+    dataSource: 'real' | 'mock';
+    dataSourceLabel: string;
+    dataSourceDescription: string;
+    mockReason?: string;
+    updateTime: string;
+    responseTime: number;
+    apiStatus: string;
+    totalStocks: number;
+    isMarketOpen: boolean;
+    cacheInfo: string;
+    warning?: string;
+  } | null>(null);
+
   // 搜索股票列表（用于模拟数据）
   const [allStocksList, setAllStocksList] = useState<any[]>([]);
 
@@ -80,11 +95,20 @@ export default function Home() {
     try {
       const result = await getStockList();
       setAllStocksList(result.stocks);
+
+      // 保存数据来源元数据
+      if (result.metadata) {
+        setDataSourceMetadata(result.metadata);
+        setUsingMockData(result.metadata.dataSource === 'mock');
+        setDataSourceMessage(result.metadata.mockReason || result.metadata.dataSourceDescription);
+      }
     } catch (error) {
       console.error('加载股票列表失败:', error);
       // 使用模拟数据
       const mockStocks = getMockStocks();
       setAllStocksList(mockStocks);
+      setUsingMockData(true);
+      setDataSourceMessage('API连接失败，使用模拟数据');
     }
   };
 
@@ -328,9 +352,12 @@ export default function Home() {
       const result = await getStocksByChange(filter.minChange, filter.maxChange);
 
       // 检查是否使用了模拟数据
-      if (result.mock) {
+      if (result.metadata && result.metadata.dataSource === 'mock') {
         setUsingMockData(true);
-        setDataSourceMessage('当前使用模拟数据，无法连接到真实行情API');
+        setDataSourceMessage(result.metadata.mockReason || '当前使用模拟数据，无法连接到真实行情API');
+        setDataSourceMetadata(result.metadata);
+      } else if (result.metadata) {
+        setDataSourceMetadata(result.metadata);
       }
 
       // 转换为Stock对象
@@ -358,8 +385,8 @@ export default function Home() {
       // 更新状态
       setAllStocksWithTime(prev => [...filteredWithTime, ...prev]);
 
-      if (result.mock) {
-        alert(`使用模拟数据筛选出${filteredStocks.length}只符合条件的股票\n（注意：当前无法连接到真实行情API）`);
+      if (result.metadata && result.metadata.dataSource === 'mock') {
+        alert(`使用模拟数据筛选出${filteredStocks.length}只符合条件的股票\n（注意：${result.metadata.mockReason || '当前无法连接到真实行情API'}）`);
       } else {
         alert(`成功从全A股中筛选出${filteredStocks.length}只符合条件的股票`);
       }
@@ -444,6 +471,71 @@ export default function Home() {
             基于涨幅、量比、换手率等指标筛选适合隔夜操作的优质标的
           </p>
         </div>
+
+        {/* 数据来源标识 */}
+        {dataSourceMetadata && (
+          <div className={`p-4 rounded-lg border ${
+            dataSourceMetadata.dataSource === 'real'
+              ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
+              : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'
+          }`}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div className="flex items-start gap-3 flex-1">
+                {dataSourceMetadata.dataSource === 'real' ? (
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge
+                      variant={dataSourceMetadata.dataSource === 'real' ? 'default' : 'secondary'}
+                      className={
+                        dataSourceMetadata.dataSource === 'real'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-amber-600 text-white'
+                      }
+                    >
+                      {dataSourceMetadata.dataSourceLabel}
+                    </Badge>
+                    {dataSourceMetadata.isMarketOpen && (
+                      <Badge variant="outline" className="border-blue-600 text-blue-600">
+                        交易时段
+                      </Badge>
+                    )}
+                  </div>
+                  <p className={`text-sm mt-1 ${
+                    dataSourceMetadata.dataSource === 'real'
+                      ? 'text-green-800 dark:text-green-200'
+                      : 'text-amber-800 dark:text-amber-200'
+                  }`}>
+                    {dataSourceMetadata.dataSourceDescription}
+                  </p>
+                  {dataSourceMetadata.dataSource === 'mock' && dataSourceMetadata.mockReason && (
+                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                      原因：{dataSourceMetadata.mockReason}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-slate-600 dark:text-slate-400">
+                    <span>更新时间：{dataSourceMetadata.updateTime}</span>
+                    <span>股票总数：{dataSourceMetadata.totalStocks}只</span>
+                    <span>响应时间：{dataSourceMetadata.responseTime}ms</span>
+                    <span>{dataSourceMetadata.cacheInfo}</span>
+                  </div>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadAllStocks}
+                className="flex-shrink-0"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                重新连接
+              </Button>
+            </div>
+          </div>
+        )}
 
         <Tabs defaultValue="results" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
@@ -542,21 +634,6 @@ export default function Home() {
                   全A股筛选
                 </Button>
               </div>
-
-              {/* 数据源提示 */}
-              {usingMockData && (
-                <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm">
-                      <p className="font-medium text-amber-800 dark:text-amber-200">当前使用模拟数据</p>
-                      <p className="text-amber-700 dark:text-amber-300 mt-1">
-                        {dataSourceMessage || '无法连接到真实行情API，正在使用模拟数据进行演示'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {allStocksWithTime.length === 0 ? (

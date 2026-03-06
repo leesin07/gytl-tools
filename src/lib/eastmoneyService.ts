@@ -14,7 +14,7 @@ export async function getStockList(
   try {
     const sectorParam = sector ? `sector=${sector}` : '';
     const url = `/api/stocks/list?${sectorParam}&page=${page}&pageSize=${pageSize}`;
-    
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -27,12 +27,19 @@ export async function getStockList(
     }
 
     const result = await response.json();
-    
+
     if (!result.success) {
       throw new Error(result.message || '获取股票列表失败');
     }
 
-    return result.data;
+    // 返回完整的响应，包括 metadata
+    return {
+      stocks: result.data.stocks,
+      total: result.data.total,
+      page: result.data.page,
+      pageSize: result.data.pageSize,
+      metadata: result.metadata || null, // 数据来源元数据
+    };
   } catch (error) {
     console.error('获取股票列表失败:', error);
     throw error;
@@ -114,7 +121,7 @@ export async function getStocksByChange(
 ) {
   try {
     const data = await getStockList();
-    
+
     // 按涨幅筛选
     const filteredStocks = data.stocks.filter((stock: any) => {
       const change = stock.change || 0;
@@ -124,7 +131,7 @@ export async function getStocksByChange(
     return {
       stocks: filteredStocks,
       count: filteredStocks.length,
-      mock: data.mock || false, // 传递mock标记
+      metadata: data.metadata, // 传递metadata
     };
   } catch (error) {
     console.error('获取涨幅股票列表失败:', error);

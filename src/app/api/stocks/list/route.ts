@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '5000'); // 默认5000条
 
+    // 记录请求开始时间
+    const requestStartTime = Date.now();
+
     // 东方财富获取股票列表的API
     const url = 'http://82.push2.eastmoney.com/api/qt/clist/get';
     
@@ -32,6 +35,7 @@ export async function GET(request: NextRequest) {
 
     let response: Response | null = null;
     let useMockData = false;
+    let mockReason = '';
     
     try {
       response = await fetch(`${url}?${params.toString()}`, {
@@ -41,9 +45,10 @@ export async function GET(request: NextRequest) {
         },
         next: { revalidate: 60 }, // 缓存60秒
       });
-    } catch (networkError) {
+    } catch (networkError: any) {
       console.warn('网络请求失败，使用模拟数据:', networkError);
       useMockData = true;
+      mockReason = `网络连接失败: ${networkError.message || '未知错误'}`;
     }
 
     if (!useMockData && response && response.ok) {
@@ -52,7 +57,11 @@ export async function GET(request: NextRequest) {
       if (result.rc !== 0) {
         console.warn('API返回错误，使用模拟数据:', result.rc);
         useMockData = true;
+        mockReason = `API返回错误码: ${result.rc}`;
       } else {
+        const responseTime = Date.now() - requestStartTime;
+        
+        // 真实API响应 - 添加数据来源元数据
         return NextResponse.json({
           success: true,
           data: {
@@ -61,17 +70,34 @@ export async function GET(request: NextRequest) {
             page,
             pageSize,
           },
+          metadata: {
+            dataSource: 'real', // 数据来源：实时
+            dataSourceLabel: '东方财富实时API',
+            dataSourceDescription: '获取自东方财富真实行情API',
+            updateTime: new Date().toLocaleString('zh-CN'),
+            responseTime: responseTime, // 响应时间（毫秒）
+            apiStatus: 'connected', // API状态
+            totalStocks: result.data.total, // 总股票数
+            isMarketOpen: checkMarketOpen(), // 是否交易时段
+            cacheInfo: '60秒缓存',
+          },
           timestamp: new Date().toISOString(),
         });
       }
+    } else if (useMockData) {
+      // 已经在 try-catch 中标记为使用模拟数据
+      console.log('使用模拟股票数据，原因:', mockReason);
     } else {
+      // response 不存在或非 ok 状态
       useMockData = true;
+      mockReason = response ? `HTTP错误: ${response.status}` : '响应为空';
     }
 
     // 使用模拟数据
     if (useMockData) {
-      console.log('使用模拟股票数据');
+      console.log('使用模拟股票数据，原因:', mockReason);
       const mockStocks = getMockStocks();
+      const responseTime = Date.now() - requestStartTime;
       
       // 转换为API返回格式
       const transformedStocks = mockStocks.map(stock => ({
@@ -97,6 +123,7 @@ export async function GET(request: NextRequest) {
         updateTime: stock.updateTime,
       }));
 
+      // 模拟数据响应 - 添加详细的数据来源元数据
       return NextResponse.json({
         success: true,
         data: {
@@ -105,8 +132,21 @@ export async function GET(request: NextRequest) {
           page,
           pageSize,
         },
+        metadata: {
+          dataSource: 'mock', // 数据来源：模拟
+          dataSourceLabel: '模拟数据（演示用）',
+          dataSourceDescription: '使用模拟数据进行演示，非真实行情',
+          mockReason: mockReason || 'API连接失败，自动降级到模拟数据',
+          updateTime: new Date().toLocaleString('zh-CN'),
+          responseTime: responseTime, // 响应时间（毫秒）
+          apiStatus: 'disconnected', // API状态
+          totalStocks: transformedStocks.length, // 模拟股票数
+          isMarketOpen: false, // 模拟数据不区分交易时段
+          cacheInfo: '无缓存（模拟数据）',
+          warning: '当前使用模拟数据，仅供开发和测试使用',
+        },
         timestamp: new Date().toISOString(),
-        mock: true, // 标记为模拟数据
+        mock: true, // 标记为模拟数据（向后兼容）
       });
     }
 
@@ -120,6 +160,31 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * 检查当前是否在交易时段
+ */
+function checkMarketOpen(): boolean {
+  const now = new Date();
+  const day = now.getDay();
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const currentTime = hour * 60 + minute;
+
+  // 周末不开市
+  if (day === 0 || day === 6) {
+    return false;
+  }
+
+  // 交易时段：9:30-11:30, 13:00-15:00
+  const morningStart = 9 * 60 + 30;  // 9:30
+  const morningEnd = 11 * 60 + 30;   // 11:30
+  const afternoonStart = 13 * 60;    // 13:00
+  const afternoonEnd = 15 * 60;      // 15:00
+
+  return (currentTime >= morningStart && currentTime <= morningEnd) ||
+         (currentTime >= afternoonStart && currentTime <= afternoonEnd);
 }
 
 /**

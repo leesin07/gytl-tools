@@ -2,11 +2,12 @@
 export interface FundRecord {
   id: string;
   date: string; // 日期
-  type: 'deposit' | 'withdraw' | 'profit' | 'loss'; // 类型：存入、取出、盈利、亏损
+  type: 'deposit' | 'withdraw' | 'profit' | 'loss' | 'transfer' | 'transaction'; // 类型：存入、取出、盈利、亏损、转账、交易
   amount: number; // 金额
   balance: number; // 余额
   description: string; // 描述
   timestamp: string; // 时间戳
+  transactionType?: 'buy' | 'sell'; // 交易类型（仅当 type 为 'transaction' 时使用）
 }
 
 // 交易记录

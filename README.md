@@ -12,6 +12,31 @@
 
 [在线演示](#) · [快速开始](#快速开始) · [部署文档](#部署) · [功能特性](#功能特性)
 
+## 🚀 快速操作
+
+**最新版本：v1.1.0** | [查看更新日志](./VERSION.md)
+
+### 一键部署（推荐）
+
+```bash
+# 快速部署到生产环境
+./scripts/quick-deploy.sh
+
+# 部署前测试
+./scripts/pre-deploy-test.sh
+
+# 快速回滚
+./scripts/quick-rollback.sh
+```
+
+详细脚本使用请查看：[工具脚本使用指南](./SCRIPTS_GUIDE.md)
+
+### 迭代更新指引
+
+- 📖 [迭代部署指引](./ITERATION_GUIDE.md) - 完整的迭代部署流程
+- 📋 [部署前检查清单](./DEPLOYMENT_CHECKLIST.md) - 部署前必查项
+- 🔧 [工具脚本使用指南](./SCRIPTS_GUIDE.md) - 自动化脚本使用方法
+
 </div>
 
 ## 📖 简介

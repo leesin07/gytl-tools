@@ -1,7 +1,12 @@
 {
-  "name": "projects",
-  "version": "0.1.0",
+  "name": "gytl-tools",
+  "version": "1.1.0",
   "private": true,
+  "description": "基于杨永兴隔夜套利法的智能选股工具",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/gytl-tools"
+  },
   "scripts": {
     "build": "bash ./scripts/build.sh",
     "dev": "bash ./scripts/dev.sh",
